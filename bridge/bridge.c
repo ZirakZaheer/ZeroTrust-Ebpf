@@ -37,6 +37,11 @@ int handle_ingress(struct __sk_buff *skb) {
   src_info.ifindex = skb->ifindex;
   src_info.rx_pkts = 0;
   src_info.tx_pkts = 0;
+  int out_ifindex = skb->ifindex;
+  int vlan_tci = skb->vlan_tci;
+  int vlan_proto = skb->vlan_proto;
+  // pop the vlan header and send to the destination
+  bpf_skb_vlan_pop(skb);
   struct host_info *src_host = mac2host.lookup_or_init(&src_key, &src_info);
   lock_xadd(&src_host->rx_pkts, 1);
   bpf_clone_redirect(skb, cfg->ifindex, 1/*ingress*/);
@@ -52,6 +57,9 @@ int handle_egress(struct __sk_buff *skb) {
   struct host_info *dst_host = mac2host.lookup(&dst_key);
   struct config *cfg = 0;
   int cfg_index = 0;
+  int vlan_proto = 1
+  int vlan_tci = 12 //tag information goes in here
+   bpf_skb_vlan_push(skb, vlan_proto, vlan_tci); //pass this information from user space
   //If flow exists then just send the packet to dst host else flood it to all ports.
   if (dst_host) {
     bpf_clone_redirect(skb, dst_host->ifindex, 0/*ingress*/);
