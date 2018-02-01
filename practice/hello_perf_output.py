@@ -1,4 +1,4 @@
-from bcc import BPF
+from bcc import BPF, libbcc
 import ctypes as ct
 import re
 import os
@@ -6,16 +6,27 @@ import os
 prog = """
 
 #include <linux/sched.h>
-
+#include "bpf_elf.h"
 
 struct data_t {
  u32 pid;
  u64 ts;
  char comm[TASK_COMM_LEN];
 };
+/*
+struct bpf_elf_map __section("maps") DEMO_MAP = {
+	.type		= BPF_MAP_TYPE_HASH,
+	.size_key	= sizeof(__u32),
+	.size_value	= sizeof(struct data_t),
+	.pinning	= PIN_GLOBAL_NS,
+	.max_elem	= 1024,
+};
+*/
+
+
 
 BPF_PERF_OUTPUT(events);
-
+BPF_HASH(DEMO_MAP, u32, struct data_t, 1024);
 int hello(struct pt_regs *ctx) {
 	struct data_t data = {};
 
@@ -24,7 +35,9 @@ int hello(struct pt_regs *ctx) {
 	bpf_get_current_comm(&data.comm, sizeof(data.comm));
 
 	events.perf_submit(ctx, &data, sizeof(data));
-
+	//	bpf_lookup_elem(DEMO_MAP, &data.pid, &data);
+	u32 psNum = 1000;	
+	DEMO_MAP.lookup_or_init(&data.pid, &data);
 	return 0;
 
 }
@@ -54,6 +67,14 @@ def print_event(cpu, data, size):
         "Hello, perf_output!"))
 	print("calling function to find ns in pid")
 	findNSpid(event.pid)
+	
+	# make the map available clusterwide
+	demoMap = b.get_table("DEMO_MAP");
+	print("demoMap",demoMap.map_fd)
+	print(demoMap.items())
+	ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/test"))
+	if ret != 0:
+		raise Exception("Failed to pin map")
 # this is where perf event collectioni is happening
 
 def findNSpid(pid):
