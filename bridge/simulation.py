@@ -1,7 +1,7 @@
 import os
 import subprocess
 import pyroute2
-from pyroute2 import IPRoute, NetNS, IPDB, NSPopen
+from pyroute2 import netns, IPRoute, NetNS, IPDB, NSPopen
 
 class Simulation(object):
     """
@@ -23,11 +23,17 @@ class Simulation(object):
     def _ns_add_ifc(self, name, ns_ifc, ifc_base_name=None, in_ifc=None,
                     out_ifc=None, ipaddr=None, macaddr=None, fn=None, cmd=None,
                     action="ok", disable_ipv6=False):
+	#print netns.listnetns()
         if name in self.ipdbs:
-            ns_ipdb = self.ipdbs[name]
+	    # create a new netns or fail, if it already existNetNS(name)
+            # create a new netns or use existing one
+	    netns = NetNS(name, flags=os.O_CREAT)
+	    ns_ipdb = self.ipdbs[name]
+	    print "namespace exists"
+	    print name
         else:
             try:
-                nl=NetNS(name)
+                nl=NetNS(name, flags=os.O_CREAT)
                 self.namespaces.append(nl)
             except KeyboardInterrupt:
                 # remove the namespace if it has been created
@@ -47,6 +53,8 @@ class Simulation(object):
                 # move half of veth into namespace
                 v.net_ns_fd = ns_ipdb.nl.netns
         else:
+	    print "creating interface"
+	    print name
             # delete the potentially leaf-over veth interfaces
             ipr = IPRoute()
             for i in ipr.link_lookup(ifname='%sa' % ifc_base_name): ipr.link_remove(i)
@@ -63,24 +71,29 @@ class Simulation(object):
                 out_ifname = "%sa" % ifc_base_name
                 if out_ifname in self.ipdb.interfaces: self.ipdb.interfaces[out_ifname].remove().commit()
                 raise
-
+        print "checkpoint 2"
         if out_ifc: out_ifc.up().commit()
         ns_ipdb.interfaces.lo.up().commit()
         in_ifc = ns_ipdb.interfaces[in_ifname]
-        with in_ifc as v:
-            v.ifname = ns_ifc
-            if ipaddr: v.add_ip("%s" % ipaddr)
-            if macaddr: v.address = macaddr
-            v.up()
+	print "checkpoint 2.1"
+#        with in_ifc as v:
+#            v.ifname = ns_ifc
+#            if ipaddr: v.add_ip("%s" % ipaddr)
+#            if macaddr: v.address = macaddr
+#	    print "checkpoint 2.2"
+#            v.up()
+	print "checkpoint 2.4"
         if disable_ipv6:
             cmd1 = ["sysctl", "-q", "-w",
                    "net.ipv6.conf.%s.disable_ipv6=1" % out_ifc.ifname]
             subprocess.call(cmd1)
+	print "checkpoint 2.7"
         if fn and out_ifc:
             self.ipdb.nl.tc("add", "ingress", out_ifc["index"], "ffff:")
             self.ipdb.nl.tc("add-filter", "bpf", out_ifc["index"], ":1",
                             fd=fn.fd, name=fn.name, parent="ffff:",
                             action=action, classid=1)
+	print "checkpoint3"
         if cmd:
             self.processes.append(NSPopen(ns_ipdb.nl.netns, cmd))
         return (ns_ipdb, out_ifc, in_ifc)

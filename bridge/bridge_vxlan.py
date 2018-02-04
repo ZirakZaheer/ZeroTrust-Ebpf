@@ -23,30 +23,41 @@ class BridgeSimulation(Simulation):
         egress_fn  = bridge_code.load_func("handle_egress", BPF.SCHED_CLS)
         mac2host   = bridge_code.get_table("mac2host")
         conf       = bridge_code.get_table("conf")
-
+	tunkey2if = b.get_table("tunkey2if")
+	if2tunkey = b.get_table("if2tunkey")
         # Creating dummy interface behind which ebpf code will do bridging.
-        ebpf_bridge = ipdb.create(ifname="ebpf_br", kind="dummy").up().commit()
+	ebpf_bridge = ipdb.create(ifname="ebpf_br", kind="vxlan",vxlan_id=0,vxlan_link=ipdb.interfaces.eno1,vxlan_port=4789,vxlan_collect_metadata=True).up().commit()
+
+        #ebpf_bridge = ipdb.create(ifname="ebpf_br", kind="dummy").up().commit()
         ipr.tc("add", "ingress", ebpf_bridge.index, "ffff:")
         ipr.tc("add-filter", "bpf", ebpf_bridge.index, ":1", fd=egress_fn.fd,
            name=egress_fn.name, parent="ffff:", action="drop", classid=1)
 
         # Passing bridge index number to dataplane module
         conf[c_int(0)] = c_int(ebpf_bridge.index)
-#	print ipdb
-#	print ipdb.interfaces
+
         # Setup namespace and their interfaces for demostration.
         host_info = []
-	host_info.append(self._create_ns("vport_test2", ipaddr="174.17.0.5/16")) #vport_test5
-        host_info.append(self._create_ns("vport_test3",ipaddr="174.17.0.3/16")) #vport_test4
-#	print host_info
+	ipaddrs = []
+        for i in range(0, num_hosts):
+            print("Launching host %i of %i" % (i + 1, num_hosts))
+            ipaddr = "172.16.1.%d/24" % (100 + i)
+	    ipaddrs.append(ipaddr)
+            host_info.append(self._create_ns("host%d" % i, ipaddr=ipaddr,
+                disable_ipv6=True))
+	        
         # For each namespace that want to connect to the ebpf bridge
         # We link it to the dummy interface behind which we run ebpf learning/forwarding code
         # logically: Attaching individual namespace interface into the ebpf bridge.
         # programmatically: running ebpf engress code on each interface
         temp_index=1
         for host in host_info:
-	    print host[1].index
-            ipr.tc("add", "ingress", host[1].index, "ffff:")
+            for i in range(0, num_hosts):
+		if i != host[1].index: #assuming that index 0 ... 1):
+	    		if2tunkey_key = if2tunkey.Key(host[1].index)
+	    		if2tunkey_remote_ipv4 = IPAddress(ipaddrs[i])
+			if2tunkey[if2tunkey_key] = if2tunkey_remote_ipv4 #
+	    ipr.tc("add", "ingress", host[1].index, "ffff:")
             ipr.tc("add-filter", "bpf", host[1].index, ":1", fd=ingress_fn.fd,
                    name=ingress_fn.name, parent="ffff:", action="drop", classid=1)
             # Passing namespace interface info to dataplane module.
