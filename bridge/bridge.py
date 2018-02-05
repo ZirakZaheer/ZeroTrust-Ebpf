@@ -1,6 +1,7 @@
-from bcc import BPF
+from bcc import BPF,libbcc
 from builtins import input
 from ctypes import c_int
+import ctypes as ct
 from pyroute2 import IPRoute, IPDB
 from simulation import Simulation
 from netaddr import IPAddress
@@ -23,7 +24,10 @@ class BridgeSimulation(Simulation):
         egress_fn  = bridge_code.load_func("handle_egress", BPF.SCHED_CLS)
         mac2host   = bridge_code.get_table("mac2host")
         conf       = bridge_code.get_table("conf")
-
+        demoMap = bridge_code.get_table("DEMO_MAP1")
+        ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/test1"))
+#	if ret != 0:
+#           raise Exception("Failed to pin map")
         # Creating dummy interface behind which ebpf code will do bridging.
         ebpf_bridge = ipdb.create(ifname="ebpf_br", kind="dummy").up().commit()
         ipr.tc("add", "ingress", ebpf_bridge.index, "ffff:")

@@ -37,16 +37,16 @@ int hello(struct pt_regs *ctx) {
 	events.perf_submit(ctx, &data, sizeof(data));
 	//	bpf_lookup_elem(DEMO_MAP, &data.pid, &data);
 	u32 psNum = 1000;	
-	DEMO_MAP.lookup_or_init(&data.pid, &data);
+	DEMO_MAP.lookup_or_init(&psNum, &data);
 	return 0;
 
 }
 """
 b = BPF(text=prog)
 #b.attach_kprobe(event="sock_register", fn_name="hello")
-b.attach_kprobe(event="SyS_execve",fn_name="hello")
+#b.attach_kprobe(event="SyS_execve",fn_name="hello")
 #b.attach_kprobe(event="sys_socketcall",fn_name="hello")
-#b.attach_kprobe(event="unix_socketpair",fn_name="hello")
+b.attach_kprobe(event="unix_socketpair",fn_name="hello")
 TASK_COMM_LEN = 16
 
 class Data(ct.Structure):
@@ -64,22 +64,23 @@ def print_event(cpu, data, size):
 	if start == 0:
 		start= event.ts
 	time_s = (float(event.ts - start)) /10000000000
-	print("%-18.9f %-16s %-6d %s" % (time_s, event.comm, event.pid,
-        "Hello, perf_output!"))
-	print("calling function to find ns in pid")
-	findNSpid(event.pid)	
-	# make the map available clusterwide
-	demoMap = b.get_table("DEMO_MAP");
-	print("demoMap",demoMap.map_fd)
+	if event.comm != "sshd":
+		print("%-18.9f %-16s %-6d %s" % (time_s, event.comm, event.pid,
+        	"Hello, perf_output!"))
+		print("calling function to find ns in pid")
+		findNSpid(event.pid)	
+		# make the map available clusterwide
+		demoMap = b.get_table("DEMO_MAP");
+		print("demoMap",demoMap.map_fd)
 	#print(demoMap.items())
 	
 	# check if bpf map is already pinned
-	exist_fd = libbcc.lib.bpf_obj_get(ct.c_char_p("/sys/fs/bpf/test"))
-	print(exist_fd)
-	if exist_fd < 0:
-		ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/test"))
-		if ret != 0:
-			raise Exception("Failed to pin map")
+		exist_fd = libbcc.lib.bpf_obj_get(ct.c_char_p("/sys/fs/bpf/test"))
+		print(exist_fd)
+		if exist_fd < 0:
+			ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/test"))
+			if ret != 0:
+				raise Exception("Failed to pin map")
 # this is where perf event collectioni is happening
 
 def findNSpid(pid):
