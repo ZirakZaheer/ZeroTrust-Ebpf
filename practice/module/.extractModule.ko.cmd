@@ -1,0 +1,1 @@
+cmd_/mnt/ZeroTrust-Ebpf/practice/module/extractModule.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /mnt/ZeroTrust-Ebpf/practice/module/extractModule.ko /mnt/ZeroTrust-Ebpf/practice/module/extractModule.o /mnt/ZeroTrust-Ebpf/practice/module/extractModule.mod.o ;  true

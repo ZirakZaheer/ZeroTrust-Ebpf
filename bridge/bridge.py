@@ -1,4 +1,4 @@
-from bcc import BPF,libbcc
+from bcc import BPF,libbcc,table
 from builtins import input
 from ctypes import c_int
 import ctypes as ct
@@ -10,6 +10,34 @@ ipdb = IPDB(nl=ipr)
 
 num_hosts = 2
 null = open("/dev/null", "w")
+TASK_COMM_LEN = 16
+class Data(ct.Structure):
+        _fields_ = [("pid", ct.c_ulonglong),
+                    ("ts", ct.c_ulonglong),
+                    ("comm", ct.c_char *  TASK_COMM_LEN)]
+
+class PinnedMap(table.HashTable):
+	def __init__(self,map_path, keyType, valueType,maxEntries):
+		map_fd = libbcc.lib.bpf_obj_get(ct.c_char_p(map_path))
+		if map_fd < 0:
+			raise ValueError("failed to open map")
+		self.map_fd = map_fd
+		self.Key = keyType
+		self.Leaf = valueType
+		self.max_entries = maxEntries
+
+def mapOperation(srcMap, dstMap):
+	# find the right value and key
+	srcValues = srcMap.values()
+	for value in srcValues:
+		if value.comm == "nginx":
+			key = 1001 #bind between {nginx : 1001}
+			libbcc.lib.bpf_update_elem(dstMap.map_fd, ct.byref(key), ct.byref(value),
+                                  0)
+
+      
+
+
 
 class BridgeSimulation(Simulation):
     def __init__(self, ipdb):
@@ -24,8 +52,7 @@ class BridgeSimulation(Simulation):
         egress_fn  = bridge_code.load_func("handle_egress", BPF.SCHED_CLS)
         mac2host   = bridge_code.get_table("mac2host")
         conf       = bridge_code.get_table("conf")
-        demoMap = bridge_code.get_table("DEMO_MAP1")
-        ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/test1"))
+        policyMap = bridge_code.get_table("DEMO_MAP1") # {u32 , data_t}
 #	if ret != 0:
 #           raise Exception("Failed to pin map")
         # Creating dummy interface behind which ebpf code will do bridging.
@@ -33,6 +60,14 @@ class BridgeSimulation(Simulation):
         ipr.tc("add", "ingress", ebpf_bridge.index, "ffff:")
         ipr.tc("add-filter", "bpf", ebpf_bridge.index, ":1", fd=egress_fn.fd,
            name=egress_fn.name, parent="ffff:", action="drop", classid=1)
+    
+# fetch the map created in bridge.c (Policy MAP) and the map created in bpf trace function (DEMO_MAP)
+# retrieve the context from one and pass it to the other
+	#srcMap = PinnedMap("/sys/fs/bpf/test", ct.c_uint32, Data, 1024)
+	#mapOperation(srcMap, policyMap)		
+        #pinmap 
+        libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p("/sys/fs/bpf/test1"))
+
 
         # Passing bridge index number to dataplane module
         conf[c_int(0)] = c_int(ebpf_bridge.index)

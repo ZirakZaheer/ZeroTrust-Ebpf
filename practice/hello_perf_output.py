@@ -4,14 +4,17 @@ import re
 import os
 
 prog = """
-
+#include <linux/pid.h>
 #include <linux/sched.h>
 #include "bpf_elf.h"
-
+#include <linux/nsproxy.h>
+#include <linux/ns_common.h>
+#include <net/net_namespace.h>
 struct data_t {
  u32 pid;
- u64 ts;
+ u64 cookie;
  char comm[TASK_COMM_LEN];
+ struct net* targetNS;
 };
 /*
 struct bpf_elf_map __section("maps") DEMO_MAP = {
@@ -26,18 +29,29 @@ struct bpf_elf_map __section("maps") DEMO_MAP = {
 
 
 BPF_PERF_OUTPUT(events);
-BPF_HASH(DEMO_MAP, u32, struct data_t, 1024);
+BPF_TABLE_PUBLIC("hash", u32, struct data_t, DEMO_MAP, 1024);
 int hello(struct pt_regs *ctx) {
 	struct data_t data = {};
-
+	struct task_struct *task;
+	struct nsproxy* nsproxy;
+	struct net* docker_ns;
+	u64 sock_cookie = 0;
 	data.pid = bpf_get_current_pid_tgid();
-	data.ts = bpf_ktime_get_ns();
+	//data.ts = bpf_ktime_get_ns();
 	bpf_get_current_comm(&data.comm, sizeof(data.comm));
-
+	task =  (struct task_struct*) bpf_get_current_task();
+	sock_cookie = bpf_get_socket_cookie();
+	data.cookie = sock_cookie;
+	nsproxy = task->nsproxy;
+	docker_ns = nsproxy->net_ns;
+        
+	data.targetNS = docker_ns;
 	events.perf_submit(ctx, &data, sizeof(data));
 	//	bpf_lookup_elem(DEMO_MAP, &data.pid, &data);
 	u32 psNum = 1000;	
 	DEMO_MAP.lookup_or_init(&psNum, &data);
+	
+
 	return 0;
 
 }
@@ -53,7 +67,7 @@ class Data(ct.Structure):
 	_fields_ = [("pid", ct.c_ulonglong),
 		    ("ts", ct.c_ulonglong),
 		    ("comm", ct.c_char *  TASK_COMM_LEN)]
-
+		   #  ("tagetNS",ct.Structure)]
 print("%-18s %-16s %-6s %s" % ("TIME(s)", "COMM", "PID", "MESSAGE"))
 
 start = 0
@@ -68,6 +82,7 @@ def print_event(cpu, data, size):
 		print("%-18.9f %-16s %-6d %s" % (time_s, event.comm, event.pid,
         	"Hello, perf_output!"))
 		print("calling function to find ns in pid")
+#		print(event.targetNS)
 		findNSpid(event.pid)	
 		# make the map available clusterwide
 		demoMap = b.get_table("DEMO_MAP");
@@ -81,6 +96,9 @@ def print_event(cpu, data, size):
 			ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/test"))
 			if ret != 0:
 				raise Exception("Failed to pin map")
+
+	
+
 # this is where perf event collectioni is happening
 
 def findNSpid(pid):
