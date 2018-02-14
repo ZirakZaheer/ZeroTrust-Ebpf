@@ -8,12 +8,14 @@ from netaddr import IPAddress
 ipr = IPRoute()
 ipdb = IPDB(nl=ipr)
 
+testNum = "6"
+pathToPin = "/sys/fs/bpf/test" + testNum
 num_hosts = 2
 null = open("/dev/null", "w")
 TASK_COMM_LEN = 16
 class Data(ct.Structure):
         _fields_ = [("pid", ct.c_ulonglong),
-                    ("ts", ct.c_ulonglong),
+                    ("lport", ct.c_ulonglong),
                     ("comm", ct.c_char *  TASK_COMM_LEN)]
 
 class PinnedMap(table.HashTable):
@@ -28,16 +30,25 @@ class PinnedMap(table.HashTable):
 
 def mapOperation(srcMap, dstMap):
 	# find the right value and key
+	print "map operation"
 	srcValues = srcMap.values()
-	for value in srcValues:
-		if value.comm == "nginx":
-			key = 1001 #bind between {nginx : 1001}
-			libbcc.lib.bpf_update_elem(dstMap.map_fd, ct.byref(key), ct.byref(value),
-                                  0)
+	print srcValues
+	print dstMap.map_fd
+	firstKey = 1
+	firstValue = srcValues[0]
+	dstMap.__setitem__(ct.c_int(firstKey), firstValue) 
+	#print libbcc.lib.bpf_update_elem(dstMap.map_fd, ct.byref(ct.c_int(firstKey)), ct.byref(firstvalue), 0)
+	print srcMap.map_fd
+	print  dstMap.__getitem__(ct.c_int(firstKey))
+#	for value in srcValues:
+#		print value
+#		if value.pid == "15323":
+#			key = 1001 #bind between {nginx : 1001}
+#			libbcc.lib.bpf_update_elem(dstMap.map_fd, ct.byref(key), ct.byref(value),0)
 
       
 
-
+bridge_code = BPF(src_file="bridge.c")
 
 class BridgeSimulation(Simulation):
     def __init__(self, ipdb):
@@ -47,7 +58,7 @@ class BridgeSimulation(Simulation):
         # Ingress = attached to tc ingress class on bridge
         # Egress = attached to tc engress class on namespace (outside) interface
         # Loading bpf functions/maps.
-        bridge_code = BPF(src_file="bridge.c")
+        #bridge_code = BPF(src_file="bridge.c")
         ingress_fn = bridge_code.load_func("handle_ingress", BPF.SCHED_CLS)
         egress_fn  = bridge_code.load_func("handle_egress", BPF.SCHED_CLS)
         mac2host   = bridge_code.get_table("mac2host")
@@ -66,7 +77,7 @@ class BridgeSimulation(Simulation):
 	#srcMap = PinnedMap("/sys/fs/bpf/test", ct.c_uint32, Data, 1024)
 	#mapOperation(srcMap, policyMap)		
         #pinmap 
-        libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p("/sys/fs/bpf/test1"))
+        #libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p("/sys/fs/bpf/test2"))
 
 
         # Passing bridge index number to dataplane module
@@ -95,6 +106,11 @@ class BridgeSimulation(Simulation):
 try:
     sim = BridgeSimulation(ipdb)
     sim.start()
+    policyMap = bridge_code.get_table("DEMO_MAP1")
+    srcMap = PinnedMap("/sys/fs/bpf/test", ct.c_uint32, Data, 1024)
+    libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p(pathToPin))
+    mapOperation(srcMap, policyMap)
+        #pinmap 
     input("Press enter to quit:")
 except Exception,e:
     print str(e)

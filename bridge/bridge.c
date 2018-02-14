@@ -1,11 +1,13 @@
 // Copyright (c) PLUMgrid, Inc. // Licensed under the Apache License, Version 2.0 (the "License")
 #include <bcc/proto.h>
+#include <bcc/helpers.h>
 #include <linux/skbuff.h>
 #include <net/sock.h>
 #include <linux/ns_common.h>
 #include <net/net_namespace.h>
 #include <linux/bpf.h>
 //Total ports should be number of hosts attached + 1.
+#define IP_TCP 6
 #define TOTAL_PORTS 3
 #define TASK_COMM_LEN 16
 //#include "/usr/include/stdio.h"
@@ -32,7 +34,7 @@ struct mac_key {
 
 struct data_t {
  u32 pid;
- u64 ts;
+ u64 lport;
  char comm[TASK_COMM_LEN];
 };
 
@@ -44,7 +46,7 @@ struct host_info {
 };
 
 BPF_TABLE("hash", struct mac_key, struct host_info, mac2host, 10240);
-BPF_TABLE("hash", u32, struct data_t, POLICY_MAP, 1024);
+BPF_TABLE("hash", u32, struct data_t, DEMO_MAP1, 1024);
 struct config {
   int ifindex;
 };
@@ -52,16 +54,36 @@ struct config {
 
 //BPF_PERF_OUTPUT(vlanevents);
 BPF_TABLE("hash", int, struct config, conf, TOTAL_PORTS);
-BPF_HASH(DEMO_MAP1, u32, struct data_t, 1024);
+//BPF_HASH(DEMO_MAP1, u32, struct data_t, 1024);
 // Handle packets from (namespace outside) interface and forward it to bridge 
 int handle_ingress(struct __sk_buff *skb) {
   //Lets assume that the packet is at 0th location of the memory.
   u8 *cursor = 0;
+  int tagPort = skb->mark;
   struct mac_key src_key = {};
   struct host_info src_info = {};
   //Extract ethernet header from the memory and point cursor to payload of ethernet header.
   struct ethernet_t *ethernet = cursor_advance(cursor, sizeof(*ethernet));
-  // Extract bridge ifindex from the config file, that is populated by the python file while
+  //assuming packets are IP_TCP
+  struct ip_t  *ip = cursor_advance(cursor, sizeof(*ip));
+  if (ip->nextp == IP_TCP) {
+  	struct tcp_t *tcp = cursor_advance(cursor, sizeof(*tcp));
+  	//tagPort = tcp->src_port;
+  }
+
+  //consult the identity table to fetch context
+ //...
+ // BPF_FUNC(get_socket_uid,skb);
+// bpf_get_socket_cookie(skb);
+
+
+
+
+
+
+
+
+// Extract bridge ifindex from the config file, that is populated by the python file while
   // creating the bridge.
   int zero = 0;
   struct config *cfg = conf.lookup(&zero);
@@ -73,34 +95,33 @@ int handle_ingress(struct __sk_buff *skb) {
 
   int cfg_index = 0;
   int vlan_proto = 0;
-  int vlan_tci = 12; //tag information goes in here
+  int vlan_tci = tagPort; //tag information goes in here
+  //bpf_get_current_pid();
   bpf_skb_vlan_push(skb, vlan_proto, vlan_tci); //pass this information from user space
-    
-  struct host_info *src_host = mac2host.lookup_or_init(&src_key, &src_info);
-  lock_xadd(&src_host->rx_pkts, 1);
-  bpf_clone_redirect(skb, cfg->ifindex, 1/*ingress*/);
-  //bpf_trace_printk("[egress] sending traffic to ifindex=%d\n, pkt_type=%d", cfg->ifindex, ethernet->type);
-  
-
-//  bpf_get_socket_cookie(skb);
-// Test if demo map is working correctly
   u32 testInd = vlan_tci;
   struct data_t dummyData = {};
   dummyData.pid = vlan_tci;
-  dummyData.ts = ts;
-  strcpy(&dummyData.comm,"testcode");
+  dummyData.lport = vlan_tci;//?????
+  strcpy(&dummyData.comm,"testcode2");
+    
+  struct host_info *src_host = mac2host.lookup_or_init(&src_key, &src_info);
+  lock_xadd(&src_host->rx_pkts, 1);
+  testInd = src_host->rx_pkts; 
   struct data_t* testData = DEMO_MAP1.lookup_or_init(&testInd,&dummyData);
-  //access demo map
+  bpf_clone_redirect(skb, cfg->ifindex, 1/*ingress*/);
+  //bpf_trace_printk("[egress] sending traffic to ifindex=%d\n, pkt_type=%d", cfg->ifindex, ethernet->type);
+  
+  
+//  bpf_get_socket_cookie(skb);
+// Test if demo map is working correctly
+ //access demo map
   int ret = 0;
-//  int fd = bpf_obj_get(testString);
+  int fd = 4; //bpf_obj_get(testString);
 //  printf("testing map: fd%d, vlan_tci: %d\n", fd, vlan_tci);
-//  if (fd > 0) {
-//      ret  =	bpf_map_update_elem(&fd, &vlan_tci, &dummyData, 0);
-//       if (ret == 0){
-//	printf("success\n");
-//	}
-//  }
-
+/*  if (fd > 0) {
+      ret  =	bpf_map_update_elem(&fd, &vlan_tci, &dummyData, 0);
+   }
+*/
 //  if (testData != NULL)
   //	bpf_trace_printk("data = %d\n",  testData->pid);
   return 0;
@@ -114,6 +135,7 @@ int handle_egress(struct __sk_buff *skb) {
   struct host_info *dst_host = mac2host.lookup(&dst_key);
   struct config *cfg = 0;
   struct net * contNet;
+  //struct 
   u32 cont_inum = 0;
   u32 vlan_tci = skb->vlan_tci;
   int vlan_proto = skb->vlan_proto;
@@ -126,7 +148,7 @@ int handle_egress(struct __sk_buff *skb) {
   int cfg_index = 0;
   //If flow exists then just send the packet to dst host else flood it to all ports.
   // enforce simple polixy based on pid carried in the packet
-  if (vlan_tci == 12) {
+//  if (vlan_tci == 1234) {
 	  if (dst_host) {
 
 		  bpf_clone_redirect(skb, dst_host->ifindex, 0/*ingress*/);
@@ -144,9 +166,9 @@ int handle_egress(struct __sk_buff *skb) {
 		  }
 
 	  }
- } else {
+// } else {
           // drop packets
- }
+// }
 
   return 0;
 }

@@ -1,4 +1,4 @@
-cmd_/mnt/ZeroTrust-Ebpf/practice/module/extractModule.o := gcc -Wp,-MD,/mnt/ZeroTrust-Ebpf/practice/module/.extractModule.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/4.9/include -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -fno-PIE -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mtune=generic -mno-red-zone -mcmodel=kernel -funit-at-a-time -DCONFIG_X86_X32_ABI -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -DCONFIG_AS_CFI_SECTIONS=1 -DCONFIG_AS_FXSAVEQ=1 -DCONFIG_AS_SSSE3=1 -DCONFIG_AS_CRC32=1 -DCONFIG_AS_AVX=1 -DCONFIG_AS_AVX2=1 -DCONFIG_AS_SHA1_NI=1 -DCONFIG_AS_SHA256_NI=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -fno-delete-null-pointer-checks -O2 --param=allow-store-data-races=0 -DCC_HAVE_ASM_GOTO -Wframe-larger-than=1024 -fstack-protector-strong -Wno-unused-but-set-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -pg -mfentry -DCC_USING_FENTRY -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -Werror=date-time -Wno-unused-function  -DMODULE  -DKBUILD_BASENAME='"extractModule"'  -DKBUILD_MODNAME='"extractModule"' -c -o /mnt/ZeroTrust-Ebpf/practice/module/extractModule.o /mnt/ZeroTrust-Ebpf/practice/module/extractModule.c
+cmd_/mnt/ZeroTrust-Ebpf/practice/module/extractModule.o := gcc -Wp,-MD,/mnt/ZeroTrust-Ebpf/practice/module/.extractModule.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/5/include -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -fno-PIE -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -funit-at-a-time -DCONFIG_X86_X32_ABI -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -DCONFIG_AS_CFI_SECTIONS=1 -DCONFIG_AS_FXSAVEQ=1 -DCONFIG_AS_SSSE3=1 -DCONFIG_AS_CRC32=1 -DCONFIG_AS_AVX=1 -DCONFIG_AS_AVX2=1 -DCONFIG_AS_AVX512=1 -DCONFIG_AS_SHA1_NI=1 -DCONFIG_AS_SHA256_NI=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -fno-delete-null-pointer-checks -O2 --param=allow-store-data-races=0 -DCC_HAVE_ASM_GOTO -Wframe-larger-than=1024 -fstack-protector-strong -Wno-unused-but-set-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -pg -mfentry -DCC_USING_FENTRY -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wno-unused-function  -DMODULE  -DKBUILD_BASENAME='"extractModule"'  -DKBUILD_MODNAME='"extractModule"' -c -o /mnt/ZeroTrust-Ebpf/practice/module/extractModule.o /mnt/ZeroTrust-Ebpf/practice/module/extractModule.c
 
 source_/mnt/ZeroTrust-Ebpf/practice/module/extractModule.o := /mnt/ZeroTrust-Ebpf/practice/module/extractModule.c
 
@@ -63,7 +63,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module/extractModule.o := \
     $(wildcard include/config/panic/timeout.h) \
     $(wildcard include/config/tracing.h) \
     $(wildcard include/config/ftrace/mcount/record.h) \
-  /usr/lib/gcc/x86_64-linux-gnu/4.9/include/stdarg.h \
+  /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
   include/linux/linkage.h \
   include/linux/stringify.h \
   include/linux/export.h \
@@ -1263,6 +1263,43 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module/extractModule.o := \
     $(wildcard include/config/bpf/events.h) \
   include/net/arp.h \
   /mnt/ZeroTrust-Ebpf/practice/module/extractModule.h \
+  include/linux/kprobes.h \
+    $(wildcard include/config/kprobes.h) \
+    $(wildcard include/config/kretprobes.h) \
+    $(wildcard include/config/kprobes/sanity/test.h) \
+    $(wildcard include/config/optprobes.h) \
+    $(wildcard include/config/kprobes/on/ftrace.h) \
+  include/linux/ftrace.h \
+    $(wildcard include/config/function/tracer.h) \
+    $(wildcard include/config/dynamic/ftrace/with/regs.h) \
+    $(wildcard include/config/dynamic/ftrace.h) \
+    $(wildcard include/config/stack/tracer.h) \
+    $(wildcard include/config/preempt/debug.h) \
+    $(wildcard include/config/function/profiler.h) \
+    $(wildcard include/config/ftrace/syscalls.h) \
+  include/linux/trace_clock.h \
+  arch/x86/include/asm/trace_clock.h \
+  include/linux/kallsyms.h \
+  include/linux/ptrace.h \
+  include/linux/sched/signal.h \
+    $(wildcard include/config/sched/autogroup.h) \
+    $(wildcard include/config/bsd/process/acct.h) \
+    $(wildcard include/config/taskstats.h) \
+  include/linux/signal.h \
+  include/linux/sched/jobctl.h \
+  include/linux/sched/task.h \
+    $(wildcard include/config/have/copy/thread/tls.h) \
+    $(wildcard include/config/have/exit/thread.h) \
+    $(wildcard include/config/arch/wants/dynamic/task/struct.h) \
+  include/linux/pid_namespace.h \
+    $(wildcard include/config/pid/ns.h) \
+  include/uapi/linux/ptrace.h \
+  arch/x86/include/asm/ftrace.h \
+  arch/x86/include/asm/kprobes.h \
+  include/asm-generic/kprobes.h \
+  arch/x86/include/asm/insn.h \
+  arch/x86/include/asm/inat.h \
+  arch/x86/include/asm/inat_types.h \
 
 /mnt/ZeroTrust-Ebpf/practice/module/extractModule.o: $(deps_/mnt/ZeroTrust-Ebpf/practice/module/extractModule.o)
 

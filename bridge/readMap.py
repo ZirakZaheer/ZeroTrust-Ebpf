@@ -25,7 +25,7 @@ def readCounter(map_path, index):
 	values = counter.values()
 	print("reading Values")
 	print(len(values))
-	data = values[int(index)]
+	data = values[1]
 	print ("anything")
 	print(data.pid)
  	print(data.lport)	
