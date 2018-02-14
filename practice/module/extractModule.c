@@ -48,19 +48,8 @@ static int trace_sock_graft(struct sock *sk, struct socket *parent)
         }
 
         if (sk) {
-              //  struct sock *sk1 = sock1->sk;
-              //  struct sock *sk2 = sock2->sk;
-              //  printk("sock1 and sock2 are not null");
-              //  if (!sk2){
-               //         printk("sk2 is null");
-              //  }
-              //  if (!sk1){
-              //          printk("sk1 is null");
-              //  }
               
-	//  if (sk1 && sk2) {
                         pr_info("sk_mark is currently %d\n", sk->sk_mark);
-               //         sk2->sk_mark = 1234;
                         sk->sk_mark = 1234;
                         pr_info("sk_mark changed to %d\n", sk->sk_mark);
 			struct inet_sock *netSk = inet_sk(sk);
@@ -70,8 +59,7 @@ static int trace_sock_graft(struct sock *sk, struct socket *parent)
 				}
 			}
 
-          //      }
- 
+		// sk is assigned to the parent sock in sock_graft, so rechecking if sk_mark is still			//the same 
 		if (parent){
 			if (parent->sk) {
 				pr_info("parent_mark %d\n", parent->sk->sk_mark);
