@@ -109,7 +109,7 @@ int handle_ingress(struct __sk_buff *skb) {
   testInd = src_host->rx_pkts; 
   struct data_t* testData = DEMO_MAP1.lookup_or_init(&testInd,&dummyData);
   bpf_clone_redirect(skb, cfg->ifindex, 1/*ingress*/);
-  //bpf_trace_printk("[egress] sending traffic to ifindex=%d\n, pkt_type=%d", cfg->ifindex, ethernet->type);
+  bpf_trace_printk("[egress] sending traffic to ifindex=%d, pkt_type=%d, skb mark = %d\n", cfg->ifindex, ethernet->type, skb->mark);
   
   
 //  bpf_get_socket_cookie(skb);

@@ -8,7 +8,7 @@ from netaddr import IPAddress
 ipr = IPRoute()
 ipdb = IPDB(nl=ipr)
 
-testNum = "6"
+testNum = "2"
 pathToPin = "/sys/fs/bpf/test" + testNum
 num_hosts = 2
 null = open("/dev/null", "w")

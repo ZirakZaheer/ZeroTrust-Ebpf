@@ -1,0 +1,1 @@
+cmd_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.ko /mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o /mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.mod.o ;  true
