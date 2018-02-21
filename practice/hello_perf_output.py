@@ -1,4 +1,4 @@
-from bcc import BPF, libbcc
+from bcc import BPF,table, libbcc
 import ctypes as ct
 import re
 import os
@@ -11,11 +11,14 @@ prog = """
 #include <linux/ns_common.h>
 #include <net/net_namespace.h>
 #include <net/inet_sock.h>
+#include <net/sock.h>
+#include <uapi/linux/ptrace.h>
+
 struct data_t {
  u32 pid;
+ u64 inum;
  u64 lport;
  char comm[TASK_COMM_LEN];
- struct net* targetNS;
 };
 /*
 struct bpf_elf_map __section("maps") DEMO_MAP = {
@@ -26,11 +29,102 @@ struct bpf_elf_map __section("maps") DEMO_MAP = {
 	.max_elem	= 1024,
 };
 */
-
-
+BPF_HASH(currsock, u32, struct sock *);
 
 BPF_PERF_OUTPUT(events);
+BPF_PERF_OUTPUT(events1);
 BPF_TABLE_PUBLIC("hash", u32, struct data_t, DEMO_MAP, 1024);
+
+
+int kprobe__inet_csk_accept(struct pt_regs *ctx, struct sock *sk)
+{
+	u32 pid = bpf_get_current_pid_tgid();
+	currsock.update(&pid, &sk);
+
+	return 0;
+};
+
+int kretprobe__inet_csk_accept(struct pt_regs *ctx)
+{
+	int ret = PT_REGS_RC(ctx);
+	u32 pid = bpf_get_current_pid_tgid();
+	struct data_t data = {};
+	struct sock **skpp;
+	skpp = currsock.lookup(&pid);
+	if (skpp == 0) {
+                bpf_trace_printk("null skpp\\n");
+		return 0;
+	}
+
+	struct sock *skp = *skpp;
+	struct net *net_ns = skp->__sk_common.skc_net.net;
+	u32 saddr = skp->__sk_common.skc_rcv_saddr;
+	u32 daddr = skp->__sk_common.skc_daddr;
+	u16 dport = skp->__sk_common.skc_dport;
+   	u16 sport = skp->__sk_common.skc_num;
+    	unsigned int inum = net_ns->ns.inum;
+
+    if (net_ns) {
+	    bpf_trace_printk("inet_csk_accept: inum %u pid %u\\n", inum, pid);
+    } else {
+	    bpf_trace_printk("NULL net_ns\\n");
+    }
+	data.pid = pid;
+	data.lport = sport;
+	data.inum = inum;
+	bpf_get_current_comm(&data.comm, sizeof(data.comm));
+	bpf_trace_printk("inet_csk_accept: sport %u dport %u\\n", sport, dport);
+	events.perf_submit(ctx, &data, sizeof(data));
+	currsock.delete(&pid);
+	DEMO_MAP.lookup_or_init(&data.lport, &data);
+	return 0;
+}
+
+int kprobe__tcp_v4_connect(struct pt_regs *ctx, struct sock *sk)
+{
+	u32 pid = bpf_get_current_pid_tgid();
+	currsock.update(&pid, &sk);
+
+	return 0;
+};
+
+int kretprobe__tcp_v4_connect(struct pt_regs *ctx)
+{
+	int ret = PT_REGS_RC(ctx);
+	u32 pid = bpf_get_current_pid_tgid();
+	struct data_t data = {};
+	struct sock **skpp;
+	skpp = currsock.lookup(&pid);
+	if (skpp == 0) {
+                bpf_trace_printk("null skpp\\n");
+		return 0;
+	}
+
+        struct sock *skp = *skpp;
+        struct net *net_ns = skp->__sk_common.skc_net.net;
+		u32 saddr = skp->__sk_common.skc_rcv_saddr;
+		u32 daddr = skp->__sk_common.skc_daddr;
+		u16 dport = skp->__sk_common.skc_dport;
+        u16 sport = skp->__sk_common.skc_num;
+        unsigned int inum = net_ns->ns.inum;
+	bpf_get_current_comm(&data.comm, sizeof(data.comm));
+        if (net_ns) {
+	    	bpf_trace_printk("tcp_v4_connect: inum %u pid %u\\n", inum, pid);
+        } else {
+	    	bpf_trace_printk("NULL net_ns\\n");
+        }
+	data.pid = pid;
+        data.lport = sport;
+        data.inum = inum;
+	bpf_trace_printk("tcp_v4_connect: sport %u dport %u\\n", sport, ntohs(dport));
+        events.perf_submit(ctx, &data, sizeof(data));
+	DEMO_MAP.lookup_or_init(&data.lport, &data);
+	currsock.delete(&pid);
+
+	return 0;
+}
+
+
 int kprobe__inet_listen(struct pt_regs *ctx, struct socket *sock, int backlog) {
 	struct data_t data = {};
 	struct task_struct *task;
@@ -44,8 +138,8 @@ int kprobe__inet_listen(struct pt_regs *ctx, struct socket *sock, int backlog) {
 	//	sock_cookie = bpf_get_socket_cookie();
 	//      data.cookie = sock_cookie;
 	nsproxy = task->nsproxy;
-	docker_ns = nsproxy->net_ns;
-        data.targetNS = docker_ns;
+	data.inum = nsproxy->net_ns->ns.inum;
+        //data.inum = docker_ns;
 	
 
 	struct sock *sk = sock->sk;
@@ -53,14 +147,15 @@ int kprobe__inet_listen(struct pt_regs *ctx, struct socket *sock, int backlog) {
 	data.lport = inet->inet_sport;
 	data.lport = ntohs(data.lport);
 	events.perf_submit(ctx, &data, sizeof(data));
-	//	bpf_lookup_elem(DEMO_MAP, &data.pid, &data);
-	u32 psNum = 1000;	
-	DEMO_MAP.lookup_or_init(&psNum, &data);
+	//bpf_lookup_elem(DEMO_MAP, &data.pid, &data);
+	//	u32 psNum = 1000;	
+	DEMO_MAP.lookup_or_init(&data.lport, &data);
 	
 
 	return 0;
 
 }
+
 """
 b = BPF(text=prog)
 #b.attach_kprobe(event="sock_register", fn_name="hello")
@@ -71,10 +166,25 @@ TASK_COMM_LEN = 16
 
 class Data(ct.Structure):
 	_fields_ = [("pid", ct.c_ulonglong),
+		    ("inum", ct.c_ulonglong),
 		    ("lport", ct.c_ulonglong),
 		    ("comm", ct.c_char *  TASK_COMM_LEN)]
-		   #  ("tagetNS",ct.Structure)]
+		    #("tagetNS",ct.Structure)]
 print("%-18s %-16s %-6s %s" % ("TIME(s)", "COMM", "PID", "MESSAGE"))
+
+class PinnedMap(table.HashTable):
+        def __init__(self,map_path, keyType, valueType,maxEntries):
+                map_fd = libbcc.lib.bpf_obj_get(ct.c_char_p(map_path))
+                if map_fd < 0:
+                        raise ValueError("failed to open map")
+                self.map_fd = map_fd
+                self.Key = keyType
+                self.Leaf = valueType
+                self.max_entries = maxEntries
+
+
+
+
 
 start = 0
 
@@ -82,21 +192,21 @@ def print_event(cpu, data, size):
 	global start
 	event = ct.cast(data, ct.POINTER(Data)).contents
 	if event.comm != "sshd":
-		print("%-18.9f %-16s %-6d %s" % (event.lport, event.comm, event.pid,
-        	"Hello, perf_output!"))
-		print("calling function to find ns in pid")
-#		print(event.targetNS)
+		print("%-10d %-16s %-6d %-10d %s"  % (event.lport, event.comm, event.pid, event.inum, "Hello, perf_output!"))
 		findNSpid(event.pid)	
+		
 		# make the map available clusterwide
 		demoMap = b.get_table("DEMO_MAP");
-		print("demoMap",demoMap.map_fd)
-	#print(demoMap.items())
-	
-	# check if bpf map is already pinned
-		exist_fd = libbcc.lib.bpf_obj_get(ct.c_char_p("/sys/fs/bpf/test"))
+		print demoMap.items()
+		checkItem = demoMap[ct.c_uint(event.lport)]
+		dstMap[ct.c_uint(event.lport)] = event
+		dstMap.__setitem__(ct.c_uint(event.lport), event)
+		print dstMap[ct.c_uint(event.lport)]
+		# check if bpf map is already pinned
+		exist_fd = libbcc.lib.bpf_obj_get(ct.c_char_p("/sys/fs/bpf/trace"))
 		print(exist_fd)
 		if exist_fd < 0:
-			ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/test"))
+			ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/trace"))
 			if ret != 0:
 				raise Exception("Failed to pin map")
 
@@ -113,6 +223,9 @@ def findNSpid(pid):
 			line1 = re.findall(r'NSpid', line)
 			if line1:
 				print line
+
+dstMap = PinnedMap("/sys/fs/bpf/policy", ct.c_uint32, Data, 1024)
+
 b["events"].open_perf_buffer(print_event)
 while 1:
 	b.kprobe_poll()

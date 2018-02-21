@@ -8,14 +8,9 @@
 #include <linux/bpf.h>
 //Total ports should be number of hosts attached + 1.
 #define IP_TCP 6
+#define IP_UDP 17
 #define TOTAL_PORTS 3
 #define TASK_COMM_LEN 16
-//#include "/usr/include/stdio.h"
-//#include "bcc/src/cc/libbpf.h"
-//#include </usr/include/stdlib.h>
-//#include <stdint.h>
-//#include <cstdio>
-//#include<string.h>
 
 /*
 static inline
@@ -34,6 +29,7 @@ struct mac_key {
 
 struct data_t {
  u32 pid;
+ u64 inum;
  u64 lport;
  char comm[TASK_COMM_LEN];
 };
@@ -46,7 +42,7 @@ struct host_info {
 };
 
 BPF_TABLE("hash", struct mac_key, struct host_info, mac2host, 10240);
-BPF_TABLE("hash", u32, struct data_t, DEMO_MAP1, 1024);
+BPF_TABLE_PUBLIC("hash", u32, struct data_t, DEMO_MAP1, 1024);
 struct config {
   int ifindex;
 };
@@ -54,12 +50,11 @@ struct config {
 
 //BPF_PERF_OUTPUT(vlanevents);
 BPF_TABLE("hash", int, struct config, conf, TOTAL_PORTS);
-//BPF_HASH(DEMO_MAP1, u32, struct data_t, 1024);
 // Handle packets from (namespace outside) interface and forward it to bridge 
 int handle_ingress(struct __sk_buff *skb) {
   //Lets assume that the packet is at 0th location of the memory.
   u8 *cursor = 0;
-  int tagPort = skb->mark;
+  int tagPort = 1;
   struct mac_key src_key = {};
   struct host_info src_info = {};
   //Extract ethernet header from the memory and point cursor to payload of ethernet header.
@@ -68,16 +63,19 @@ int handle_ingress(struct __sk_buff *skb) {
   struct ip_t  *ip = cursor_advance(cursor, sizeof(*ip));
   if (ip->nextp == IP_TCP) {
   	struct tcp_t *tcp = cursor_advance(cursor, sizeof(*tcp));
-  	//tagPort = tcp->src_port;
+  	tagPort = tcp->src_port;
+  } else if (ip->nextp == IP_UDP) {
+	struct udp_t *udp = cursor_advance(cursor, sizeof(*udp));
+	tagPort = udp->sport;
   }
-
+ 
   //consult the identity table to fetch context
  //...
- // BPF_FUNC(get_socket_uid,skb);
-// bpf_get_socket_cookie(skb);
-
-
-
+ if (tagPort > 0) {
+ 	bpf_trace_printk("tag port is %d,   %u \n", tagPort, ip->nextp);
+ 	struct data_t* d1 = DEMO_MAP1.lookup(&tagPort);
+	if (d1) bpf_trace_printk("data collected is %u,  %u, %u \n", d1->lport, d1->pid, d1->inum);
+	}
 
 
 
@@ -96,34 +94,15 @@ int handle_ingress(struct __sk_buff *skb) {
   int cfg_index = 0;
   int vlan_proto = 0;
   int vlan_tci = tagPort; //tag information goes in here
-  //bpf_get_current_pid();
+  //u32 pid1 = bpf_get_current_pid_tgid();
+  //bpf_get_current_task();
   bpf_skb_vlan_push(skb, vlan_proto, vlan_tci); //pass this information from user space
-  u32 testInd = vlan_tci;
-  struct data_t dummyData = {};
-  dummyData.pid = vlan_tci;
-  dummyData.lport = vlan_tci;//?????
-  strcpy(&dummyData.comm,"testcode2");
     
   struct host_info *src_host = mac2host.lookup_or_init(&src_key, &src_info);
   lock_xadd(&src_host->rx_pkts, 1);
-  testInd = src_host->rx_pkts; 
-  struct data_t* testData = DEMO_MAP1.lookup_or_init(&testInd,&dummyData);
   bpf_clone_redirect(skb, cfg->ifindex, 1/*ingress*/);
-  bpf_trace_printk("[egress] sending traffic to ifindex=%d, pkt_type=%d, skb mark = %d\n", cfg->ifindex, ethernet->type, skb->mark);
+  //bpf_trace_printk("[egress] sending traffic to ifindex=%d, pkt_type=%d, pid = %d\n", cfg->ifindex, ethernet->type, pid1);
   
-  
-//  bpf_get_socket_cookie(skb);
-// Test if demo map is working correctly
- //access demo map
-  int ret = 0;
-  int fd = 4; //bpf_obj_get(testString);
-//  printf("testing map: fd%d, vlan_tci: %d\n", fd, vlan_tci);
-/*  if (fd > 0) {
-      ret  =	bpf_map_update_elem(&fd, &vlan_tci, &dummyData, 0);
-   }
-*/
-//  if (testData != NULL)
-  //	bpf_trace_printk("data = %d\n",  testData->pid);
   return 0;
 }
 
@@ -137,18 +116,20 @@ int handle_egress(struct __sk_buff *skb) {
   struct net * contNet;
   //struct 
   u32 cont_inum = 0;
-  u32 vlan_tci = skb->vlan_tci;
+  u32 packetTag = skb->vlan_tci;
   int vlan_proto = skb->vlan_proto;
 //  pop the vlan header and send to the destination
   bpf_skb_vlan_pop(skb);
 // extract struct net from skb, to getnamespace struct and inum
-    //contNet = sock_net(skb->sk);
-    //cont_inum = contNet->ns.inum;
 
   int cfg_index = 0;
   //If flow exists then just send the packet to dst host else flood it to all ports.
   // enforce simple polixy based on pid carried in the packet
-//  if (vlan_tci == 1234) {
+  struct data_t* context = DEMO_MAP1.lookup(&packetTag);
+  if (!context) packetTag = 1;
+  if (context)  bpf_trace_printk("Tag inside packet is =  %u, contextport is  = %u\n", packetTag, context->lport);
+  if (packetTag == 1 || context->lport == packetTag) {
+
 	  if (dst_host) {
 
 		  bpf_clone_redirect(skb, dst_host->ifindex, 0/*ingress*/);
@@ -166,9 +147,9 @@ int handle_egress(struct __sk_buff *skb) {
 		  }
 
 	  }
-// } else {
+ } else {
           // drop packets
-// }
+ }
 
   return 0;
 }

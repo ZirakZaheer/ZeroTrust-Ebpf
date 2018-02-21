@@ -42,4 +42,8 @@ def readCounter(map_path, index):
 if __name__ == '__main__':
 	path = sys.argv[1]
 	index = sys.argv[2]	
-	readCounter(path, index) 
+	readCounter(path, index)
+
+
+
+ 

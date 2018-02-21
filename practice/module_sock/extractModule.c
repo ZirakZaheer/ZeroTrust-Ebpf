@@ -26,7 +26,8 @@
 #include "extractModule.h"
 #include <linux/kprobes.h>
 #include <net/inet_sock.h>
-
+#include <
+#include <asm/atomic64_64.h>
 //#include <unistd.h>
 /* Module parameters */
 #define pr_fmt(fmt) "ETN JPROBE: %s:%d: " fmt, __FUNCTION__, __LINE__
@@ -46,8 +47,9 @@ static int trace_sock_graft(struct sock *sk, struct socket *parent)
         if (parent == NULL) {
                 printk("sock2 is Null");
         }
-
+	
         if (sk) {
+                        atomic64_cmpxchg(&sk->sk_cookie, 0, 1234);
               
                         pr_info("sk_mark is currently %d\n", sk->sk_mark);
                         sk->sk_mark = 1234;
@@ -58,7 +60,7 @@ static int trace_sock_graft(struct sock *sk, struct socket *parent)
 					pr_info("sk port %d\n", netSk->inet_sport); 
 				}
 			}
-
+			
 		// sk is assigned to the parent sock in sock_graft, so rechecking if sk_mark is still			//the same 
 		if (parent){
 			if (parent->sk) {

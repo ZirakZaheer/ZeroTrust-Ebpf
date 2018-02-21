@@ -21,6 +21,9 @@ class AccessPinnedArray(table.HashTable):
 def readCounter(map_path, index):
 	counter = AccessPinnedArray(map_path, ct.c_uint32, Data, 1024);
  	print counter.map_fd;	
+	
+	print counter[ct.c_uint(32861)]
+	print counter.items()
 	print counter.Key
 	values = counter.values()
 	print("reading Values")

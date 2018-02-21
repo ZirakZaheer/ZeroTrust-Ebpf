@@ -1,4 +1,4 @@
-cmd_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := gcc -Wp,-MD,/mnt/ZeroTrust-Ebpf/practice/module_ip_build/.extractModuleIP.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/5/include -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -fno-PIE -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -funit-at-a-time -DCONFIG_X86_X32_ABI -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -DCONFIG_AS_CFI_SECTIONS=1 -DCONFIG_AS_FXSAVEQ=1 -DCONFIG_AS_SSSE3=1 -DCONFIG_AS_CRC32=1 -DCONFIG_AS_AVX=1 -DCONFIG_AS_AVX2=1 -DCONFIG_AS_AVX512=1 -DCONFIG_AS_SHA1_NI=1 -DCONFIG_AS_SHA256_NI=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -fno-delete-null-pointer-checks -O2 --param=allow-store-data-races=0 -DCC_HAVE_ASM_GOTO -Wframe-larger-than=1024 -fstack-protector-strong -Wno-unused-but-set-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -pg -mfentry -DCC_USING_FENTRY -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wno-unused-function  -DMODULE  -DKBUILD_BASENAME='"extractModuleIP"'  -DKBUILD_MODNAME='"extractModuleIP"' -c -o /mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o /mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.c
+cmd_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := gcc -Wp,-MD,/mnt/ZeroTrust-Ebpf/practice/module_ip_build/.extractModuleIP.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/5/include -I./arch/x86/include -I./arch/x86/include/generated  -I./include -I./arch/x86/include/uapi -I./arch/x86/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -D__KERNEL__ -fno-pie -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -Werror-implicit-function-declaration -Wno-format-security -std=gnu89 -fno-PIE -fno-pie -no-pie -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -m64 -falign-jumps=1 -falign-loops=1 -mno-80387 -mno-fp-ret-in-387 -mpreferred-stack-boundary=3 -mskip-rax-setup -mtune=generic -mno-red-zone -mcmodel=kernel -funit-at-a-time -DCONFIG_X86_X32_ABI -DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -DCONFIG_AS_CFI_SECTIONS=1 -DCONFIG_AS_FXSAVEQ=1 -DCONFIG_AS_SSSE3=1 -DCONFIG_AS_CRC32=1 -DCONFIG_AS_AVX=1 -DCONFIG_AS_AVX2=1 -DCONFIG_AS_AVX512=1 -DCONFIG_AS_SHA1_NI=1 -DCONFIG_AS_SHA256_NI=1 -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -fno-delete-null-pointer-checks -O2 --param=allow-store-data-races=0 -DCC_HAVE_ASM_GOTO -Wframe-larger-than=1024 -fstack-protector-strong -Wno-unused-but-set-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-var-tracking-assignments -pg -mfentry -DCC_USING_FENTRY -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fno-stack-check -fconserve-stack -Werror=implicit-int -Werror=strict-prototypes -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wno-unused-function  -DMODULE  -DKBUILD_BASENAME='"extractModuleIP"'  -DKBUILD_MODNAME='"extractModuleIP"' -c -o /mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o /mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.c
 
 source_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := /mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.c
 
@@ -25,17 +25,13 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/uapi/linux/posix_types.h \
   include/linux/stddef.h \
   include/uapi/linux/stddef.h \
-  include/linux/compiler.h \
-    $(wildcard include/config/trace/branch/profiling.h) \
-    $(wildcard include/config/profile/all/branches.h) \
-    $(wildcard include/config/kasan.h) \
+  include/linux/compiler_types.h \
     $(wildcard include/config/enable/must/check.h) \
     $(wildcard include/config/enable/warn/deprecated.h) \
   include/linux/compiler-gcc.h \
     $(wildcard include/config/arch/supports/optimized/inlining.h) \
     $(wildcard include/config/optimize/inlining.h) \
     $(wildcard include/config/gcov/kernel.h) \
-    $(wildcard include/config/stack/validation.h) \
     $(wildcard include/config/arch/use/builtin/bswap.h) \
   arch/x86/include/asm/posix_types.h \
     $(wildcard include/config/x86/32.h) \
@@ -44,6 +40,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/linux/skbuff.h \
     $(wildcard include/config/nf/conntrack.h) \
     $(wildcard include/config/bridge/netfilter.h) \
+    $(wildcard include/config/highmem.h) \
     $(wildcard include/config/xfrm.h) \
     $(wildcard include/config/ipv6/ndisc/nodetype.h) \
     $(wildcard include/config/net/switchdev.h) \
@@ -52,14 +49,17 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/net/rx/busy/poll.h) \
     $(wildcard include/config/xps.h) \
     $(wildcard include/config/network/secmark.h) \
+    $(wildcard include/config/have/efficient/unaligned/access.h) \
     $(wildcard include/config/network/phy/timestamping.h) \
     $(wildcard include/config/netfilter/xt/target/trace.h) \
     $(wildcard include/config/nf/tables.h) \
+    $(wildcard include/config/ip/vs.h) \
   include/linux/kernel.h \
     $(wildcard include/config/preempt/voluntary.h) \
     $(wildcard include/config/debug/atomic/sleep.h) \
     $(wildcard include/config/mmu.h) \
     $(wildcard include/config/prove/locking.h) \
+    $(wildcard include/config/arch/has/refcount.h) \
     $(wildcard include/config/panic/timeout.h) \
     $(wildcard include/config/tracing.h) \
     $(wildcard include/config/ftrace/mcount/record.h) \
@@ -76,19 +76,24 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   arch/x86/include/asm/linkage.h \
     $(wildcard include/config/x86/64.h) \
     $(wildcard include/config/x86/alignment/16.h) \
-  include/linux/bitops.h \
-  arch/x86/include/asm/bitops.h \
-    $(wildcard include/config/x86/cmov.h) \
+  include/linux/compiler.h \
+    $(wildcard include/config/trace/branch/profiling.h) \
+    $(wildcard include/config/profile/all/branches.h) \
+    $(wildcard include/config/stack/validation.h) \
+    $(wildcard include/config/kasan.h) \
+  arch/x86/include/asm/barrier.h \
+    $(wildcard include/config/x86/ppro/fence.h) \
   arch/x86/include/asm/alternative.h \
     $(wildcard include/config/smp.h) \
   arch/x86/include/asm/asm.h \
-  arch/x86/include/asm/rmwcc.h \
-  arch/x86/include/asm/barrier.h \
-    $(wildcard include/config/x86/ppro/fence.h) \
   arch/x86/include/asm/nops.h \
     $(wildcard include/config/mk7.h) \
     $(wildcard include/config/x86/p6/nop.h) \
   include/asm-generic/barrier.h \
+  include/linux/bitops.h \
+  arch/x86/include/asm/bitops.h \
+    $(wildcard include/config/x86/cmov.h) \
+  arch/x86/include/asm/rmwcc.h \
   include/asm-generic/bitops/find.h \
     $(wildcard include/config/generic/find/first/bit.h) \
   include/asm-generic/bitops/sched.h \
@@ -105,11 +110,14 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/paravirt.h) \
   arch/x86/include/asm/disabled-features.h \
     $(wildcard include/config/x86/intel/mpx.h) \
+    $(wildcard include/config/x86/intel/umip.h) \
     $(wildcard include/config/x86/intel/memory/protection/keys.h) \
+    $(wildcard include/config/page/table/isolation.h) \
   include/asm-generic/bitops/const_hweight.h \
   include/asm-generic/bitops/le.h \
   arch/x86/include/uapi/asm/byteorder.h \
   include/linux/byteorder/little_endian.h \
+    $(wildcard include/config/cpu/big/endian.h) \
   include/uapi/linux/byteorder/little_endian.h \
   include/linux/swab.h \
   include/uapi/linux/swab.h \
@@ -144,48 +152,42 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/linux/jump_label.h \
   arch/x86/include/asm/jump_label.h \
   include/linux/build_bug.h \
-  include/linux/kmemcheck.h \
-    $(wildcard include/config/kmemcheck.h) \
-  include/linux/mm_types.h \
-    $(wildcard include/config/have/cmpxchg/double.h) \
-    $(wildcard include/config/have/aligned/struct/page.h) \
-    $(wildcard include/config/transparent/hugepage.h) \
-    $(wildcard include/config/memcg.h) \
-    $(wildcard include/config/userfaultfd.h) \
-    $(wildcard include/config/numa.h) \
-    $(wildcard include/config/have/arch/compat/mmap/bases.h) \
-    $(wildcard include/config/pgtable/levels.h) \
-    $(wildcard include/config/aio.h) \
-    $(wildcard include/config/mmu/notifier.h) \
-    $(wildcard include/config/cpumask/offstack.h) \
-    $(wildcard include/config/numa/balancing.h) \
-    $(wildcard include/config/arch/want/batched/unmap/tlb/flush.h) \
-    $(wildcard include/config/hugetlb/page.h) \
-  include/linux/mm_types_task.h \
-    $(wildcard include/config/split/ptlock/cpus.h) \
-    $(wildcard include/config/arch/enable/split/pmd/ptlock.h) \
+  include/linux/time.h \
+    $(wildcard include/config/arch/uses/gettimeoffset.h) \
+  include/linux/seqlock.h \
+    $(wildcard include/config/debug/lock/alloc.h) \
+  include/linux/spinlock.h \
+    $(wildcard include/config/debug/spinlock.h) \
+    $(wildcard include/config/preempt.h) \
+  include/linux/preempt.h \
+    $(wildcard include/config/preempt/count.h) \
+    $(wildcard include/config/debug/preempt.h) \
+    $(wildcard include/config/preempt/tracer.h) \
+    $(wildcard include/config/preempt/notifiers.h) \
+  include/linux/list.h \
+    $(wildcard include/config/debug/list.h) \
+  include/linux/poison.h \
+    $(wildcard include/config/illegal/pointer/value.h) \
+    $(wildcard include/config/page/poisoning/zero.h) \
+  include/uapi/linux/const.h \
+  arch/x86/include/asm/preempt.h \
+  arch/x86/include/asm/percpu.h \
+    $(wildcard include/config/x86/64/smp.h) \
+  include/asm-generic/percpu.h \
+    $(wildcard include/config/have/setup/per/cpu/area.h) \
   include/linux/threads.h \
     $(wildcard include/config/nr/cpus.h) \
     $(wildcard include/config/base/small.h) \
-  include/linux/atomic.h \
-    $(wildcard include/config/generic/atomic64.h) \
-  arch/x86/include/asm/atomic.h \
-  arch/x86/include/asm/cmpxchg.h \
-  arch/x86/include/asm/cmpxchg_64.h \
-  arch/x86/include/asm/atomic64_64.h \
-  include/asm-generic/atomic-long.h \
-  include/linux/cpumask.h \
-    $(wildcard include/config/hotplug/cpu.h) \
-    $(wildcard include/config/debug/per/cpu/maps.h) \
-  include/linux/bitmap.h \
-  include/linux/string.h \
-    $(wildcard include/config/binary/printf.h) \
-    $(wildcard include/config/fortify/source.h) \
-  include/uapi/linux/string.h \
-  arch/x86/include/asm/string.h \
-  arch/x86/include/asm/string_64.h \
-    $(wildcard include/config/x86/mce.h) \
-    $(wildcard include/config/arch/has/uaccess/flushcache.h) \
+  include/linux/percpu-defs.h \
+    $(wildcard include/config/debug/force/weak/per/cpu.h) \
+    $(wildcard include/config/virtualization.h) \
+    $(wildcard include/config/amd/mem/encrypt.h) \
+  include/linux/thread_info.h \
+    $(wildcard include/config/thread/info/in/task.h) \
+    $(wildcard include/config/debug/stack/usage.h) \
+    $(wildcard include/config/debug/kmemleak.h) \
+    $(wildcard include/config/have/arch/within/stack/frames.h) \
+    $(wildcard include/config/hardened/usercopy.h) \
   include/linux/bug.h \
     $(wildcard include/config/generic/bug.h) \
     $(wildcard include/config/bug/on/data/corruption.h) \
@@ -194,11 +196,36 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/asm-generic/bug.h \
     $(wildcard include/config/bug.h) \
     $(wildcard include/config/generic/bug/relative/pointers.h) \
+  include/linux/restart_block.h \
+    $(wildcard include/config/compat.h) \
+  arch/x86/include/asm/current.h \
+  arch/x86/include/asm/thread_info.h \
+    $(wildcard include/config/vm86.h) \
+    $(wildcard include/config/frame/pointer.h) \
+    $(wildcard include/config/ia32/emulation.h) \
   arch/x86/include/asm/page.h \
   arch/x86/include/asm/page_types.h \
     $(wildcard include/config/physical/start.h) \
     $(wildcard include/config/physical/align.h) \
-  include/uapi/linux/const.h \
+  include/linux/mem_encrypt.h \
+    $(wildcard include/config/arch/has/mem/encrypt.h) \
+  arch/x86/include/asm/mem_encrypt.h \
+  arch/x86/include/uapi/asm/bootparam.h \
+  include/linux/screen_info.h \
+  include/uapi/linux/screen_info.h \
+  include/linux/apm_bios.h \
+  include/uapi/linux/apm_bios.h \
+  include/uapi/linux/ioctl.h \
+  arch/x86/include/uapi/asm/ioctl.h \
+  include/asm-generic/ioctl.h \
+  include/uapi/asm-generic/ioctl.h \
+  include/linux/edd.h \
+  include/uapi/linux/edd.h \
+  arch/x86/include/asm/ist.h \
+  arch/x86/include/uapi/asm/ist.h \
+  include/video/edid.h \
+    $(wildcard include/config/x86.h) \
+  include/uapi/video/edid.h \
   arch/x86/include/asm/page_64_types.h \
     $(wildcard include/config/randomize/memory.h) \
     $(wildcard include/config/randomize/base.h) \
@@ -206,6 +233,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   arch/x86/include/asm/page_64.h \
     $(wildcard include/config/debug/virtual.h) \
     $(wildcard include/config/flatmem.h) \
+    $(wildcard include/config/x86/mce.h) \
     $(wildcard include/config/x86/vsyscall/emulation.h) \
   include/linux/range.h \
   include/asm-generic/memory_model.h \
@@ -214,44 +242,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/sparsemem.h) \
   include/linux/pfn.h \
   include/asm-generic/getorder.h \
-  arch/x86/include/asm/tlbbatch.h \
-  include/linux/auxvec.h \
-  include/uapi/linux/auxvec.h \
-  arch/x86/include/uapi/asm/auxvec.h \
-    $(wildcard include/config/ia32/emulation.h) \
-  include/linux/list.h \
-    $(wildcard include/config/debug/list.h) \
-  include/linux/poison.h \
-    $(wildcard include/config/illegal/pointer/value.h) \
-    $(wildcard include/config/page/poisoning/zero.h) \
-  include/linux/spinlock.h \
-    $(wildcard include/config/debug/spinlock.h) \
-    $(wildcard include/config/generic/lockbreak.h) \
-    $(wildcard include/config/preempt.h) \
-    $(wildcard include/config/debug/lock/alloc.h) \
-  include/linux/preempt.h \
-    $(wildcard include/config/preempt/count.h) \
-    $(wildcard include/config/debug/preempt.h) \
-    $(wildcard include/config/preempt/tracer.h) \
-    $(wildcard include/config/preempt/notifiers.h) \
-  arch/x86/include/asm/preempt.h \
-  arch/x86/include/asm/percpu.h \
-    $(wildcard include/config/x86/64/smp.h) \
-  include/asm-generic/percpu.h \
-    $(wildcard include/config/have/setup/per/cpu/area.h) \
-  include/linux/percpu-defs.h \
-    $(wildcard include/config/debug/force/weak/per/cpu.h) \
-  include/linux/thread_info.h \
-    $(wildcard include/config/thread/info/in/task.h) \
-    $(wildcard include/config/debug/stack/usage.h) \
-    $(wildcard include/config/have/arch/within/stack/frames.h) \
-    $(wildcard include/config/hardened/usercopy.h) \
-  include/linux/restart_block.h \
-    $(wildcard include/config/compat.h) \
-  arch/x86/include/asm/current.h \
-  arch/x86/include/asm/thread_info.h \
-    $(wildcard include/config/vm86.h) \
-    $(wildcard include/config/frame/pointer.h) \
   arch/x86/include/asm/cpufeature.h \
     $(wildcard include/config/x86/feature/names.h) \
     $(wildcard include/config/x86/fast/feature/tests.h) \
@@ -265,10 +255,12 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   arch/x86/include/asm/math_emu.h \
   arch/x86/include/asm/ptrace.h \
   arch/x86/include/asm/segment.h \
+    $(wildcard include/config/xen/pv.h) \
     $(wildcard include/config/x86/32/lazy/gs.h) \
   arch/x86/include/uapi/asm/ptrace.h \
   arch/x86/include/uapi/asm/ptrace-abi.h \
   arch/x86/include/asm/paravirt_types.h \
+    $(wildcard include/config/pgtable/levels.h) \
     $(wildcard include/config/paravirt/debug.h) \
   arch/x86/include/asm/desc_defs.h \
   arch/x86/include/asm/kmap_types.h \
@@ -298,17 +290,35 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/uapi/asm-generic/errno.h \
   include/uapi/asm-generic/errno-base.h \
   arch/x86/include/asm/cpumask.h \
+  include/linux/cpumask.h \
+    $(wildcard include/config/cpumask/offstack.h) \
+    $(wildcard include/config/hotplug/cpu.h) \
+    $(wildcard include/config/debug/per/cpu/maps.h) \
+  include/linux/bitmap.h \
+  include/linux/string.h \
+    $(wildcard include/config/binary/printf.h) \
+    $(wildcard include/config/fortify/source.h) \
+  include/uapi/linux/string.h \
+  arch/x86/include/asm/string.h \
+  arch/x86/include/asm/string_64.h \
+    $(wildcard include/config/arch/has/uaccess/flushcache.h) \
   arch/x86/include/uapi/asm/msr.h \
-  include/uapi/linux/ioctl.h \
-  arch/x86/include/uapi/asm/ioctl.h \
-  include/asm-generic/ioctl.h \
-  include/uapi/asm-generic/ioctl.h \
+  arch/x86/include/asm/atomic.h \
+  arch/x86/include/asm/cmpxchg.h \
+  arch/x86/include/asm/cmpxchg_64.h \
+  arch/x86/include/asm/atomic64_64.h \
   include/linux/tracepoint-defs.h \
+  include/linux/atomic.h \
+    $(wildcard include/config/generic/atomic64.h) \
+  include/asm-generic/atomic-long.h \
   include/linux/static_key.h \
   arch/x86/include/asm/paravirt.h \
+    $(wildcard include/config/debug/entry.h) \
   arch/x86/include/asm/frame.h \
   arch/x86/include/asm/special_insns.h \
   arch/x86/include/asm/fpu/types.h \
+  arch/x86/include/asm/unwind_hints.h \
+  arch/x86/include/asm/orc_types.h \
   include/linux/personality.h \
   include/uapi/linux/personality.h \
   include/linux/math64.h \
@@ -332,7 +342,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/asm-generic/qspinlock.h \
   arch/x86/include/asm/qrwlock.h \
   include/asm-generic/qrwlock.h \
-    $(wildcard include/config/cpu/big/endian.h) \
   include/linux/rwlock.h \
   include/linux/spinlock_api_smp.h \
     $(wildcard include/config/inline/spin/lock.h) \
@@ -345,6 +354,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/inline/spin/unlock/bh.h) \
     $(wildcard include/config/inline/spin/unlock/irq.h) \
     $(wildcard include/config/inline/spin/unlock/irqrestore.h) \
+    $(wildcard include/config/generic/lockbreak.h) \
   include/linux/rwlock_api_smp.h \
     $(wildcard include/config/inline/read/lock.h) \
     $(wildcard include/config/inline/write/lock.h) \
@@ -364,6 +374,9 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/inline/write/unlock/irq.h) \
     $(wildcard include/config/inline/read/unlock/irqrestore.h) \
     $(wildcard include/config/inline/write/unlock/irqrestore.h) \
+  include/linux/time64.h \
+  include/uapi/linux/time.h \
+  include/linux/time32.h \
   include/linux/rbtree.h \
   include/linux/rcupdate.h \
     $(wildcard include/config/preempt/rcu.h) \
@@ -378,25 +391,120 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/rcu/boost.h) \
     $(wildcard include/config/arch/weak/release/acquire.h) \
   include/linux/rcutree.h \
+  include/linux/socket.h \
+  arch/x86/include/uapi/asm/socket.h \
+  include/uapi/asm-generic/socket.h \
+  arch/x86/include/uapi/asm/sockios.h \
+  include/uapi/asm-generic/sockios.h \
+  include/uapi/linux/sockios.h \
+  include/linux/uio.h \
+  include/uapi/linux/uio.h \
+  include/uapi/linux/socket.h \
+  include/linux/refcount.h \
+    $(wildcard include/config/refcount/full.h) \
+  include/linux/mutex.h \
+    $(wildcard include/config/mutex/spin/on/owner.h) \
+    $(wildcard include/config/debug/mutexes.h) \
+  include/linux/osq_lock.h \
+  include/linux/debug_locks.h \
+    $(wildcard include/config/debug/locking/api/selftests.h) \
+  arch/x86/include/asm/refcount.h \
+  include/linux/net.h \
+  include/linux/random.h \
+    $(wildcard include/config/gcc/plugin/latent/entropy.h) \
+    $(wildcard include/config/arch/random.h) \
+  include/linux/once.h \
+  include/uapi/linux/random.h \
+  include/linux/irqnr.h \
+  include/uapi/linux/irqnr.h \
+  arch/x86/include/asm/archrandom.h \
+  include/linux/wait.h \
+  include/uapi/linux/wait.h \
+  include/linux/fcntl.h \
+  include/uapi/linux/fcntl.h \
+  arch/x86/include/uapi/asm/fcntl.h \
+  include/uapi/asm-generic/fcntl.h \
+  include/linux/fs.h \
+    $(wildcard include/config/sysfs.h) \
+    $(wildcard include/config/fs/posix/acl.h) \
+    $(wildcard include/config/security.h) \
+    $(wildcard include/config/cgroup/writeback.h) \
+    $(wildcard include/config/ima.h) \
+    $(wildcard include/config/fsnotify.h) \
+    $(wildcard include/config/fs/encryption.h) \
+    $(wildcard include/config/epoll.h) \
+    $(wildcard include/config/file/locking.h) \
+    $(wildcard include/config/quota.h) \
+    $(wildcard include/config/fs/dax.h) \
+    $(wildcard include/config/block.h) \
+    $(wildcard include/config/mandatory/file/locking.h) \
+    $(wildcard include/config/migration.h) \
+  include/linux/wait_bit.h \
+  include/linux/kdev_t.h \
+  include/uapi/linux/kdev_t.h \
+  include/linux/dcache.h \
+  include/linux/rculist.h \
+  include/linux/rculist_bl.h \
+  include/linux/list_bl.h \
+  include/linux/bit_spinlock.h \
+  include/linux/lockref.h \
+    $(wildcard include/config/arch/use/cmpxchg/lockref.h) \
+  include/generated/bounds.h \
+  include/linux/stringhash.h \
+    $(wildcard include/config/dcache/word/access.h) \
+  include/linux/hash.h \
+    $(wildcard include/config/have/arch/hash.h) \
+  include/linux/path.h \
+  include/linux/stat.h \
+  arch/x86/include/uapi/asm/stat.h \
+  include/uapi/linux/stat.h \
+  include/linux/uidgid.h \
+    $(wildcard include/config/user/ns.h) \
+  include/linux/highuid.h \
+  include/linux/list_lru.h \
+    $(wildcard include/config/memcg.h) \
+    $(wildcard include/config/slob.h) \
+  include/linux/nodemask.h \
+    $(wildcard include/config/numa.h) \
+  include/linux/numa.h \
+    $(wildcard include/config/nodes/shift.h) \
+  include/linux/shrinker.h \
+  include/linux/llist.h \
+    $(wildcard include/config/arch/have/nmi/safe/cmpxchg.h) \
+  include/linux/radix-tree.h \
+    $(wildcard include/config/radix/tree/multiorder.h) \
+  include/linux/pid.h \
   include/linux/rwsem.h \
     $(wildcard include/config/rwsem/spin/on/owner.h) \
     $(wildcard include/config/rwsem/generic/spinlock.h) \
-  include/linux/osq_lock.h \
   arch/x86/include/asm/rwsem.h \
+  include/linux/mm_types.h \
+    $(wildcard include/config/have/cmpxchg/double.h) \
+    $(wildcard include/config/have/aligned/struct/page.h) \
+    $(wildcard include/config/transparent/hugepage.h) \
+    $(wildcard include/config/userfaultfd.h) \
+    $(wildcard include/config/have/arch/compat/mmap/bases.h) \
+    $(wildcard include/config/membarrier.h) \
+    $(wildcard include/config/aio.h) \
+    $(wildcard include/config/mmu/notifier.h) \
+    $(wildcard include/config/numa/balancing.h) \
+    $(wildcard include/config/arch/want/batched/unmap/tlb/flush.h) \
+    $(wildcard include/config/hugetlb/page.h) \
+    $(wildcard include/config/hmm.h) \
+  include/linux/mm_types_task.h \
+    $(wildcard include/config/split/ptlock/cpus.h) \
+    $(wildcard include/config/arch/enable/split/pmd/ptlock.h) \
+  arch/x86/include/asm/tlbbatch.h \
+  include/linux/auxvec.h \
+  include/uapi/linux/auxvec.h \
+  arch/x86/include/uapi/asm/auxvec.h \
   include/linux/completion.h \
-  include/linux/wait.h \
-  include/uapi/linux/wait.h \
   include/linux/uprobes.h \
     $(wildcard include/config/uprobes.h) \
   include/linux/errno.h \
   include/uapi/linux/errno.h \
   arch/x86/include/asm/uprobes.h \
   include/linux/notifier.h \
-  include/linux/mutex.h \
-    $(wildcard include/config/mutex/spin/on/owner.h) \
-    $(wildcard include/config/debug/mutexes.h) \
-  include/linux/debug_locks.h \
-    $(wildcard include/config/debug/locking/api/selftests.h) \
   include/linux/srcu.h \
     $(wildcard include/config/tiny/srcu.h) \
     $(wildcard include/config/tree/srcu.h) \
@@ -404,17 +512,11 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/linux/workqueue.h \
     $(wildcard include/config/debug/objects/work.h) \
     $(wildcard include/config/freezer.h) \
-    $(wildcard include/config/sysfs.h) \
     $(wildcard include/config/wq/watchdog.h) \
   include/linux/timer.h \
     $(wildcard include/config/debug/objects/timers.h) \
     $(wildcard include/config/no/hz/common.h) \
   include/linux/ktime.h \
-  include/linux/time.h \
-    $(wildcard include/config/arch/uses/gettimeoffset.h) \
-  include/linux/seqlock.h \
-  include/linux/time64.h \
-  include/uapi/linux/time.h \
   include/linux/jiffies.h \
   include/linux/timex.h \
   include/uapi/linux/timex.h \
@@ -428,6 +530,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/x86/tsc.h) \
   include/generated/timeconst.h \
   include/linux/timekeeping.h \
+  include/linux/timekeeping32.h \
   include/linux/debugobjects.h \
     $(wildcard include/config/debug/objects.h) \
     $(wildcard include/config/debug/objects/free.h) \
@@ -437,78 +540,8 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/rcu/fanout.h) \
     $(wildcard include/config/rcu/fanout/leaf.h) \
   include/linux/page-flags-layout.h \
-  include/linux/numa.h \
-    $(wildcard include/config/nodes/shift.h) \
-  include/generated/bounds.h \
   arch/x86/include/asm/mmu.h \
     $(wildcard include/config/modify/ldt/syscall.h) \
-  include/linux/socket.h \
-  arch/x86/include/uapi/asm/socket.h \
-  include/uapi/asm-generic/socket.h \
-  arch/x86/include/uapi/asm/sockios.h \
-  include/uapi/asm-generic/sockios.h \
-  include/uapi/linux/sockios.h \
-  include/linux/uio.h \
-  include/uapi/linux/uio.h \
-  include/uapi/linux/socket.h \
-  include/linux/net.h \
-  include/linux/random.h \
-    $(wildcard include/config/gcc/plugin/latent/entropy.h) \
-    $(wildcard include/config/arch/random.h) \
-  include/linux/once.h \
-  include/uapi/linux/random.h \
-  include/linux/irqnr.h \
-  include/uapi/linux/irqnr.h \
-  arch/x86/include/asm/archrandom.h \
-  include/linux/fcntl.h \
-  include/uapi/linux/fcntl.h \
-  arch/x86/include/uapi/asm/fcntl.h \
-  include/uapi/asm-generic/fcntl.h \
-  include/linux/fs.h \
-    $(wildcard include/config/fs/posix/acl.h) \
-    $(wildcard include/config/security.h) \
-    $(wildcard include/config/cgroup/writeback.h) \
-    $(wildcard include/config/ima.h) \
-    $(wildcard include/config/fsnotify.h) \
-    $(wildcard include/config/fs/encryption.h) \
-    $(wildcard include/config/epoll.h) \
-    $(wildcard include/config/file/locking.h) \
-    $(wildcard include/config/quota.h) \
-    $(wildcard include/config/fs/dax.h) \
-    $(wildcard include/config/mandatory/file/locking.h) \
-    $(wildcard include/config/block.h) \
-    $(wildcard include/config/migration.h) \
-  include/linux/wait_bit.h \
-  include/linux/kdev_t.h \
-  include/uapi/linux/kdev_t.h \
-  include/linux/dcache.h \
-  include/linux/rculist.h \
-  include/linux/rculist_bl.h \
-  include/linux/list_bl.h \
-  include/linux/bit_spinlock.h \
-  include/linux/lockref.h \
-    $(wildcard include/config/arch/use/cmpxchg/lockref.h) \
-  include/linux/stringhash.h \
-    $(wildcard include/config/dcache/word/access.h) \
-  include/linux/hash.h \
-    $(wildcard include/config/have/arch/hash.h) \
-  include/linux/path.h \
-  include/linux/stat.h \
-  arch/x86/include/uapi/asm/stat.h \
-  include/uapi/linux/stat.h \
-  include/linux/uidgid.h \
-    $(wildcard include/config/user/ns.h) \
-  include/linux/highuid.h \
-  include/linux/list_lru.h \
-    $(wildcard include/config/slob.h) \
-  include/linux/nodemask.h \
-    $(wildcard include/config/highmem.h) \
-  include/linux/shrinker.h \
-  include/linux/llist.h \
-    $(wildcard include/config/arch/have/nmi/safe/cmpxchg.h) \
-  include/linux/radix-tree.h \
-    $(wildcard include/config/radix/tree/multiorder.h) \
-  include/linux/pid.h \
   include/linux/semaphore.h \
   include/uapi/linux/fiemap.h \
   include/linux/migrate_mode.h \
@@ -530,18 +563,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/x86/mpparse.h) \
   arch/x86/include/asm/mpspec_def.h \
   arch/x86/include/asm/x86_init.h \
-  arch/x86/include/uapi/asm/bootparam.h \
-  include/linux/screen_info.h \
-  include/uapi/linux/screen_info.h \
-  include/linux/apm_bios.h \
-  include/uapi/linux/apm_bios.h \
-  include/linux/edd.h \
-  include/uapi/linux/edd.h \
-  arch/x86/include/asm/ist.h \
-  arch/x86/include/uapi/asm/ist.h \
-  include/video/edid.h \
-    $(wildcard include/config/x86.h) \
-  include/uapi/video/edid.h \
   arch/x86/include/asm/apicdef.h \
   arch/x86/include/asm/apic.h \
     $(wildcard include/config/x86/x2apic.h) \
@@ -549,6 +570,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/provide/ohci1394/dma/init.h) \
     $(wildcard include/config/pci/mmconfig.h) \
     $(wildcard include/config/x86/intel/mid.h) \
+    $(wildcard include/config/acpi/apei/ghes.h) \
     $(wildcard include/config/intel/txt.h) \
   arch/x86/include/asm/acpi.h \
     $(wildcard include/config/acpi/apei.h) \
@@ -578,13 +600,16 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/no/generic/pci/ioport/map.h) \
     $(wildcard include/config/generic/pci/iomap.h) \
   include/xen/xen.h \
-    $(wildcard include/config/xen/dom0.h) \
     $(wildcard include/config/xen/pvh.h) \
+    $(wildcard include/config/xen/dom0.h) \
   include/xen/interface/xen.h \
   arch/x86/include/asm/xen/interface.h \
   arch/x86/include/asm/xen/interface_64.h \
   arch/x86/include/asm/pvclock-abi.h \
   arch/x86/include/asm/xen/hypervisor.h \
+  include/asm-generic/io.h \
+    $(wildcard include/config/virt/to/bus.h) \
+  include/linux/vmalloc.h \
   arch/x86/include/uapi/asm/vsyscall.h \
   include/asm-generic/fixmap.h \
   arch/x86/include/asm/io_apic.h \
@@ -630,6 +655,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/linux/pageblock-flags.h \
     $(wildcard include/config/hugetlb/page/size/variable.h) \
   include/linux/memory_hotplug.h \
+    $(wildcard include/config/arch/has/add/pages.h) \
     $(wildcard include/config/have/arch/nodedata/extension.h) \
     $(wildcard include/config/have/bootmem/info/node.h) \
   arch/x86/include/asm/mmzone.h \
@@ -653,8 +679,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/slab.h) \
     $(wildcard include/config/slub.h) \
   include/linux/kmemleak.h \
-    $(wildcard include/config/debug/kmemleak.h) \
-  include/linux/vmalloc.h \
   include/linux/kasan.h \
   include/net/checksum.h \
   include/linux/uaccess.h \
@@ -678,7 +702,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/ubsan.h) \
     $(wildcard include/config/task/xacct.h) \
     $(wildcard include/config/cpusets.h) \
-    $(wildcard include/config/intel/rdt/a.h) \
+    $(wildcard include/config/intel/rdt.h) \
     $(wildcard include/config/futex.h) \
     $(wildcard include/config/perf/events.h) \
     $(wildcard include/config/task/delay/acct.h) \
@@ -693,12 +717,17 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/linux/sem.h \
   include/uapi/linux/sem.h \
   include/linux/ipc.h \
+  include/linux/rhashtable.h \
+  include/linux/jhash.h \
+  include/linux/unaligned/packed_struct.h \
+  include/linux/list_nulls.h \
   include/uapi/linux/ipc.h \
   arch/x86/include/uapi/asm/ipcbuf.h \
   include/uapi/asm-generic/ipcbuf.h \
   arch/x86/include/uapi/asm/sembuf.h \
   include/linux/shm.h \
   include/uapi/linux/shm.h \
+  include/uapi/asm-generic/hugetlb_encode.h \
   arch/x86/include/uapi/asm/shmbuf.h \
   include/uapi/asm-generic/shmbuf.h \
   arch/x86/include/asm/shmparam.h \
@@ -779,8 +808,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/linux/idr.h \
   include/linux/kobject_ns.h \
   include/linux/kref.h \
-  include/linux/refcount.h \
-    $(wildcard include/config/refcount/full.h) \
   include/linux/klist.h \
   include/linux/pinctrl/devinfo.h \
     $(wildcard include/config/pm.h) \
@@ -801,6 +828,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/fanotify.h) \
     $(wildcard include/config/posix/mqueue.h) \
     $(wildcard include/config/bpf/syscall.h) \
+    $(wildcard include/config/net.h) \
   include/linux/pinctrl/pinctrl-state.h \
   include/linux/pm.h \
     $(wildcard include/config/vt/console/sleep.h) \
@@ -829,7 +857,10 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/metag.h) \
     $(wildcard include/config/ia64.h) \
     $(wildcard include/config/stack/growsup.h) \
+    $(wildcard include/config/device/private.h) \
+    $(wildcard include/config/device/public.h) \
     $(wildcard include/config/shmem.h) \
+    $(wildcard include/config/have/memblock.h) \
     $(wildcard include/config/debug/vm/rb.h) \
     $(wildcard include/config/page/poisoning.h) \
     $(wildcard include/config/debug/pagealloc.h) \
@@ -850,13 +881,16 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/swap.h) \
     $(wildcard include/config/thp/swap.h) \
     $(wildcard include/config/ksm.h) \
+  include/linux/memremap.h \
   arch/x86/include/asm/pgtable.h \
     $(wildcard include/config/debug/wx.h) \
     $(wildcard include/config/have/arch/transparent/hugepage/pud.h) \
     $(wildcard include/config/have/arch/soft/dirty.h) \
+    $(wildcard include/config/arch/enable/thp/migration.h) \
   arch/x86/include/asm/pgtable_64.h \
   include/asm-generic/pgtable.h \
     $(wildcard include/config/have/arch/huge/vmap.h) \
+    $(wildcard include/config/x86/espfix64.h) \
   include/linux/huge_mm.h \
   include/linux/sched/coredump.h \
     $(wildcard include/config/core/dump/default/elf/headers.h) \
@@ -906,6 +940,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/module/unload.h) \
     $(wildcard include/config/constructors.h) \
   include/linux/kmod.h \
+  include/linux/umh.h \
   include/linux/elf.h \
   arch/x86/include/asm/elf.h \
   arch/x86/include/asm/user.h \
@@ -919,6 +954,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/ppc64.h) \
   include/linux/rbtree_latch.h \
   arch/x86/include/asm/module.h \
+    $(wildcard include/config/unwinder/orc.h) \
     $(wildcard include/config/m486.h) \
     $(wildcard include/config/m586.h) \
     $(wildcard include/config/m586tsc.h) \
@@ -945,6 +981,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/have/mod/arch/specific.h) \
     $(wildcard include/config/modules/use/elf/rel.h) \
     $(wildcard include/config/modules/use/elf/rela.h) \
+  arch/x86/include/asm/orc_types.h \
   include/linux/proc_fs.h \
   include/linux/netdevice.h \
     $(wildcard include/config/dcb.h) \
@@ -980,11 +1017,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   arch/x86/include/asm/delay.h \
   include/asm-generic/delay.h \
   include/linux/prefetch.h \
-  include/linux/dmaengine.h \
-    $(wildcard include/config/async/tx/enable/channel/switch.h) \
-    $(wildcard include/config/dma/engine.h) \
-    $(wildcard include/config/rapidio/dma/engine.h) \
-    $(wildcard include/config/async/tx/dma.h) \
   include/linux/dynamic_queue_limits.h \
   include/linux/ethtool.h \
   include/linux/compat.h \
@@ -994,6 +1026,8 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/uapi/linux/hdlc/ioctl.h \
   include/uapi/linux/aio_abi.h \
   arch/x86/include/asm/compat.h \
+  include/linux/sched/task_stack.h \
+  include/uapi/linux/magic.h \
   arch/x86/include/asm/user32.h \
   include/uapi/linux/ethtool.h \
   include/linux/if_ether.h \
@@ -1006,7 +1040,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/netfilter/netlink/acct.h) \
     $(wildcard include/config/nf/ct/netlink/timeout.h) \
     $(wildcard include/config/wext/core.h) \
-    $(wildcard include/config/ip/vs.h) \
     $(wildcard include/config/mpls.h) \
     $(wildcard include/config/can.h) \
     $(wildcard include/config/net/ns.h) \
@@ -1046,7 +1079,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/nf/ct/proto/sctp.h) \
     $(wildcard include/config/nf/conntrack/events.h) \
     $(wildcard include/config/nf/conntrack/labels.h) \
-  include/linux/list_nulls.h \
   include/linux/netfilter/nf_conntrack_tcp.h \
   include/uapi/linux/netfilter/nf_conntrack_tcp.h \
   include/linux/netfilter/nf_conntrack_dccp.h \
@@ -1058,7 +1090,24 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/net/netns/nftables.h \
   include/net/netns/xfrm.h \
   include/uapi/linux/xfrm.h \
-  include/net/flowcache.h \
+  include/net/netns/mpls.h \
+  include/net/netns/can.h \
+  include/linux/ns_common.h \
+  include/linux/seq_file_net.h \
+  include/net/dcbnl.h \
+  include/uapi/linux/dcbnl.h \
+  include/net/netprio_cgroup.h \
+  include/linux/cgroup.h \
+    $(wildcard include/config/cgroup/cpuacct.h) \
+    $(wildcard include/config/sock/cgroup/data.h) \
+    $(wildcard include/config/cgroup/net/classid.h) \
+    $(wildcard include/config/cgroup/data.h) \
+  include/uapi/linux/cgroupstats.h \
+  include/uapi/linux/taskstats.h \
+  include/linux/user_namespace.h \
+    $(wildcard include/config/inotify/user.h) \
+    $(wildcard include/config/persistent/keyrings.h) \
+  include/linux/kernel_stat.h \
   include/linux/interrupt.h \
     $(wildcard include/config/irq/forced/threading.h) \
     $(wildcard include/config/generic/irq/probe.h) \
@@ -1098,29 +1147,12 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   arch/x86/include/asm/hw_irq.h \
     $(wildcard include/config/hpet/timer.h) \
     $(wildcard include/config/dmar/table.h) \
-    $(wildcard include/config/ht/irq.h) \
     $(wildcard include/config/x86/uv.h) \
     $(wildcard include/config/vmd.h) \
   include/linux/profile.h \
     $(wildcard include/config/profiling.h) \
   arch/x86/include/asm/sections.h \
   include/asm-generic/sections.h \
-  include/net/netns/mpls.h \
-  include/net/netns/can.h \
-  include/linux/ns_common.h \
-  include/linux/seq_file_net.h \
-  include/net/dcbnl.h \
-  include/uapi/linux/dcbnl.h \
-  include/net/netprio_cgroup.h \
-  include/linux/cgroup.h \
-    $(wildcard include/config/sock/cgroup/data.h) \
-    $(wildcard include/config/cgroup/net/classid.h) \
-    $(wildcard include/config/cgroup/data.h) \
-  include/uapi/linux/cgroupstats.h \
-  include/uapi/linux/taskstats.h \
-  include/linux/user_namespace.h \
-    $(wildcard include/config/inotify/user.h) \
-    $(wildcard include/config/persistent/keyrings.h) \
   include/linux/cgroup-defs.h \
   include/linux/bpf-cgroup.h \
     $(wildcard include/config/cgroup/bpf.h) \
@@ -1128,7 +1160,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/efficient/unaligned/access.h) \
   include/uapi/linux/bpf_common.h \
   include/linux/cgroup_subsys.h \
-    $(wildcard include/config/cgroup/cpuacct.h) \
     $(wildcard include/config/blk/cgroup.h) \
     $(wildcard include/config/cgroup/device.h) \
     $(wildcard include/config/cgroup/freezer.h) \
@@ -1157,10 +1188,10 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/linux/ip.h \
   include/uapi/linux/ip.h \
   include/linux/tcp.h \
+    $(wildcard include/config/smc.h) \
     $(wildcard include/config/tcp/md5sig.h) \
   include/linux/win_minmax.h \
   include/net/sock.h \
-    $(wildcard include/config/net.h) \
     $(wildcard include/config/inet.h) \
   include/linux/page_counter.h \
   include/linux/memcontrol.h \
@@ -1182,6 +1213,7 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/asm-generic/cacheflush.h \
   include/linux/mempool.h \
   include/linux/ioprio.h \
+  include/linux/sched/rt.h \
   include/linux/iocontext.h \
   include/linux/filter.h \
     $(wildcard include/config/arch/has/set/memory.h) \
@@ -1202,7 +1234,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/uapi/linux/if_addr.h \
   include/net/rtnetlink.h \
   include/net/netlink.h \
-    $(wildcard include/config/have/efficient/unaligned/access.h) \
   include/uapi/linux/filter.h \
   include/linux/rculist_nulls.h \
   include/linux/poll.h \
@@ -1216,13 +1247,12 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/net/smc.h \
   include/net/inet_connection_sock.h \
   include/net/inet_sock.h \
-  include/linux/jhash.h \
-  include/linux/unaligned/packed_struct.h \
   include/net/request_sock.h \
   include/net/netns/hash.h \
   include/net/l3mdev.h \
   include/net/fib_rules.h \
   include/uapi/linux/fib_rules.h \
+  include/net/fib_notifier.h \
   include/net/inet_timewait_sock.h \
   include/net/timewait_sock.h \
   include/uapi/linux/tcp.h \
@@ -1257,10 +1287,6 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
   include/net/inet_hashtables.h \
   include/net/inet_ecn.h \
   include/net/dsfield.h \
-  include/linux/bpf.h \
-  include/linux/file.h \
-  include/linux/bpf_types.h \
-    $(wildcard include/config/bpf/events.h) \
   include/net/arp.h \
   /mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.h \
   include/linux/kprobes.h \
@@ -1271,10 +1297,10 @@ deps_/mnt/ZeroTrust-Ebpf/practice/module_ip_build/extractModuleIP.o := \
     $(wildcard include/config/kprobes/on/ftrace.h) \
   include/linux/ftrace.h \
     $(wildcard include/config/function/tracer.h) \
-    $(wildcard include/config/dynamic/ftrace/with/regs.h) \
     $(wildcard include/config/dynamic/ftrace.h) \
+    $(wildcard include/config/dynamic/ftrace/with/regs.h) \
     $(wildcard include/config/stack/tracer.h) \
-    $(wildcard include/config/preempt/debug.h) \
+    $(wildcard include/config/preemptirq/events.h) \
     $(wildcard include/config/function/profiler.h) \
     $(wildcard include/config/ftrace/syscalls.h) \
   include/linux/trace_clock.h \

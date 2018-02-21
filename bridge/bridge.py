@@ -9,12 +9,13 @@ ipr = IPRoute()
 ipdb = IPDB(nl=ipr)
 
 testNum = "2"
-pathToPin = "/sys/fs/bpf/test" + testNum
+pathToPin = "/sys/fs/bpf/policy"
 num_hosts = 2
 null = open("/dev/null", "w")
 TASK_COMM_LEN = 16
 class Data(ct.Structure):
         _fields_ = [("pid", ct.c_ulonglong),
+		    ("inum", ct.c_ulonglong),
                     ("lport", ct.c_ulonglong),
                     ("comm", ct.c_char *  TASK_COMM_LEN)]
 
@@ -104,12 +105,16 @@ class BridgeSimulation(Simulation):
             temp_index=temp_index+1
 
 try:
+    policyMap = bridge_code.get_table("DEMO_MAP1")
+    libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p(pathToPin))
+
+    text = raw_input("prompt")
     sim = BridgeSimulation(ipdb)
     sim.start()
-    policyMap = bridge_code.get_table("DEMO_MAP1")
-    srcMap = PinnedMap("/sys/fs/bpf/test", ct.c_uint32, Data, 1024)
-    libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p(pathToPin))
-    mapOperation(srcMap, policyMap)
+#    policyMap = bridge_code.get_table("DEMO_MAP1")
+   # srcMap = PinnedMap("/sys/fs/bpf/trace", ct.c_uint32, Data, 1024)
+#    libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p(pathToPin))
+   # mapOperation(srcMap, policyMap)
         #pinmap 
     input("Press enter to quit:")
 except Exception,e:
