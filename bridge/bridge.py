@@ -9,7 +9,7 @@ ipr = IPRoute()
 ipdb = IPDB(nl=ipr)
 
 testNum = "2"
-pathToPin = "/sys/fs/bpf/policy"
+pathToPin = "/sys/fs/bpf/context"
 num_hosts = 2
 null = open("/dev/null", "w")
 TASK_COMM_LEN = 16
@@ -105,10 +105,13 @@ class BridgeSimulation(Simulation):
             temp_index=temp_index+1
 
 try:
-    policyMap = bridge_code.get_table("DEMO_MAP1")
-    libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p(pathToPin))
-
-    text = raw_input("prompt")
+    contextMap = bridge_code.get_table("DEMO_MAP1")
+    libbcc.lib.bpf_obj_pin(contextMap.map_fd, ct.c_char_p(pathToPin))
+    policyMap = bridge_code.get_table("POLICY_MAP")
+    libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p("/sys/fs/bpf/policy"))
+    ifinum = bridge_code.get_table("if_inum")
+    libbcc.lib.bpf_obj_pin(ifinum.map_fd, ct.c_char_p("/sys/fs/bpf/ifinum"))
+    text = raw_input("Maps setup done: Press a Key to continue")
     sim = BridgeSimulation(ipdb)
     sim.start()
 #    policyMap = bridge_code.get_table("DEMO_MAP1")

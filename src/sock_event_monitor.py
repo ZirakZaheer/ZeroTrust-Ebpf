@@ -20,6 +20,7 @@ struct data_t {
  u64 lport;
  char comm[TASK_COMM_LEN];
 };
+
 /*
 struct bpf_elf_map __section("maps") DEMO_MAP = {
 	.type		= BPF_MAP_TYPE_HASH,
@@ -57,6 +58,7 @@ int kretprobe__inet_csk_accept(struct pt_regs *ctx)
 	}
 
 	struct sock *skp = *skpp;
+        int ifindex = skp->sk_bound_dev_if;     
 	struct net *net_ns = skp->__sk_common.skc_net.net;
 	u32 saddr = skp->__sk_common.skc_rcv_saddr;
 	u32 daddr = skp->__sk_common.skc_daddr;
@@ -65,9 +67,9 @@ int kretprobe__inet_csk_accept(struct pt_regs *ctx)
     	unsigned int inum = net_ns->ns.inum;
 
     if (net_ns) {
-	    bpf_trace_printk("inet_csk_accept: inum %u pid %u\\n", inum, pid);
+//	    bpf_trace_printk("inet_csk_accept: inum %u pid %u ifindex %d \\n", inum, pid, ifindex);
     } else {
-	    bpf_trace_printk("NULL net_ns\\n");
+//	    bpf_trace_printk("NULL net_ns\\n");
     }
 	data.pid = pid;
 	data.lport = sport;
@@ -101,7 +103,9 @@ int kretprobe__tcp_v4_connect(struct pt_regs *ctx)
 	}
 
         struct sock *skp = *skpp;
-        struct net *net_ns = skp->__sk_common.skc_net.net;
+        //get interface sock is bound to
+	int ifindex = skp->sk_bound_dev_if;	
+	struct net *net_ns = skp->__sk_common.skc_net.net;
 		u32 saddr = skp->__sk_common.skc_rcv_saddr;
 		u32 daddr = skp->__sk_common.skc_daddr;
 		u16 dport = skp->__sk_common.skc_dport;
@@ -116,7 +120,7 @@ int kretprobe__tcp_v4_connect(struct pt_regs *ctx)
 	data.pid = pid;
         data.lport = sport;
         data.inum = inum;
-	bpf_trace_printk("tcp_v4_connect: sport %u dport %u\\n", sport, ntohs(dport));
+	bpf_trace_printk("tcp_v4_connect: sport %u dport %u  ifindex %d\\n", sport, ntohs(dport), ifindex);
         events.perf_submit(ctx, &data, sizeof(data));
 	DEMO_MAP.lookup_or_init(&data.lport, &data);
 	currsock.delete(&pid);
@@ -141,7 +145,7 @@ int kprobe__inet_listen(struct pt_regs *ctx, struct socket *sock, int backlog) {
 	data.inum = nsproxy->net_ns->ns.inum;
         //data.inum = docker_ns;
 	
-
+	
 	struct sock *sk = sock->sk;
 	struct inet_sock *inet = (struct inet_sock *)sk;
 	data.lport = inet->inet_sport;
@@ -163,6 +167,12 @@ b = BPF(text=prog)
 #b.attach_kprobe(event="sys_socketcall",fn_name="hello")
 #b.attach_kprobe(event="unix_socketpair",fn_name="hello")
 TASK_COMM_LEN = 16
+class Policy(ct.Structure):
+	_fields_ = [("pid", ct.c_ulonglong),
+		    ("dport",ct.c_ulonglong),
+		    ("srcContext",ct.c_char * TASK_COMM_LEN),
+		    ("dstContext",ct.c_char * TASK_COMM_LEN)]
+
 
 class Data(ct.Structure):
 	_fields_ = [("pid", ct.c_ulonglong),
@@ -188,7 +198,7 @@ class PinnedMap(table.HashTable):
 
 start = 0
 
-def print_event(cpu, data, size):
+def handle_event(cpu, data, size):
 	global start
 	event = ct.cast(data, ct.POINTER(Data)).contents
 	if event.comm != "sshd":
@@ -197,14 +207,45 @@ def print_event(cpu, data, size):
 		
 		# make the map available clusterwide
 		demoMap = b.get_table("DEMO_MAP");
-		print demoMap.items()
+		#print demoMap.items()
 		checkItem = demoMap[ct.c_uint(event.lport)]
-		dstMap[ct.c_uint(event.lport)] = event
-		dstMap.__setitem__(ct.c_uint(event.lport), event)
-		print dstMap[ct.c_uint(event.lport)]
+		pseudoHash = event.lport + event.inum
+		print "pseudo hash", pseudoHash
+		dstMap[ct.c_ulong(pseudoHash)] = event
+		#print dstMap[ct.c_uint(event.lport)]
 		# check if bpf map is already pinned
 		exist_fd = libbcc.lib.bpf_obj_get(ct.c_char_p("/sys/fs/bpf/trace"))
 		print(exist_fd)
+		print "event.comm", event.comm		
+		if event.comm == "nginx":
+			newPolicy = Policy()
+			newPolicy.pid = event.pid
+			newPolicy.dport = event.lport
+			newPolicy.dstContext = "nginx"
+			newPolicy.srcContext = "curl"
+			policyMap[ct.c_long(event.lport)] = newPolicy
+			#policyMap.__setitem__(ct.c_long(event.lport),newPolicy)
+                elif event.comm == "curl":
+                        newPolicy = Policy()
+                        newPolicy.pid = event.pid
+                        newPolicy.dport = event.lport
+                        newPolicy.dstContext = "curl"  
+                        newPolicy.srcContext = "nginx"
+                        policyMap[ct.c_long(event.lport)] = newPolicy
+
+#                        policyMap.__setitem__(ct.c_uint(event.lport),newPolicy)
+			print "policy set"  
+			print policyMap[ct.c_uint(event.lport)]
+                elif event.comm == "java":
+                        newPolicy = Policy()
+                        newPolicy.pid = event.pid
+                        newPolicy.dport = event.lport
+                        newPolicy.dstContext = "java"  
+                        newPolicy.srcContext = "nginx"  
+                        policyMap[ct.c_long(event.lport)] = newPolicy
+
+#                        policyMap.__setitem__(ct.c_uint(event.lport),newPolicy)
+	
 		if exist_fd < 0:
 			ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/trace"))
 			if ret != 0:
@@ -224,8 +265,8 @@ def findNSpid(pid):
 			if line1:
 				print line
 
-dstMap = PinnedMap("/sys/fs/bpf/policy", ct.c_uint32, Data, 1024)
-
-b["events"].open_perf_buffer(print_event)
+dstMap = PinnedMap("/sys/fs/bpf/context", ct.c_uint32, Data, 1024)
+policyMap = PinnedMap("/sys/fs/bpf/policy",ct.c_long, Policy, 1024)
+b["events"].open_perf_buffer(handle_event)
 while 1:
 	b.kprobe_poll()

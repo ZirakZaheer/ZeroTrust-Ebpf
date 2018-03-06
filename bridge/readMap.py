@@ -8,6 +8,12 @@ class Data(ct.Structure):
                     ("lport", ct.c_ulonglong),
                     ("comm", ct.c_char *  TASK_COMM_LEN)]
 
+class Policy(ct.Structure):
+        _fields_ = [("pid", ct.c_ulonglong),
+                    ("dport",ct.c_ulonglong),
+                    ("srcContext",ct.c_char * TASK_COMM_LEN),
+                    ("dstContext",ct.c_char * TASK_COMM_LEN)]
+
 class AccessPinnedArray(table.HashTable):
 	def __init__(self, map_path, keytype, leaftype, max_entries):
 		map_fd = libbcc.lib.bpf_obj_get(ct.c_char_p(map_path))
@@ -19,10 +25,10 @@ class AccessPinnedArray(table.HashTable):
 		self.max_entries = max_entries
 
 def readCounter(map_path, index):
-	counter = AccessPinnedArray(map_path, ct.c_uint32, Data, 1024);
+	counter = AccessPinnedArray(map_path, ct.c_long, Policy, 1024);
  	print counter.map_fd;	
 	
-	print counter[ct.c_uint(32861)]
+	print counter[ct.c_uint(39926)]
 	print counter.items()
 	print counter.Key
 	values = counter.values()

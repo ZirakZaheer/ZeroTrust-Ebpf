@@ -1,3 +1,4 @@
-#ebpf_turtle
+#ebpf tracing and Policy enforcement code
 
-Containing all ebpf code under one turtle shell.
+Bridge dir contains for policy enforcement and bridge forwarding using ebpf
+src contains code to handle ebpf maps, socket events tracing, rtnetlink events 
