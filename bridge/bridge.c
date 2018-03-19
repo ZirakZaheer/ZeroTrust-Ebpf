@@ -1,4 +1,3 @@
-// Copyright (c) PLUMgrid, Inc. // Licensed under the Apache License, Version 2.0 (the "License")
 #include <bcc/proto.h>
 #include <bcc/helpers.h>
 #include <linux/skbuff.h>
@@ -48,13 +47,16 @@ struct config {
 };
 
 
-//BPF_PERF_OUTPUT(vlanevents);
+BPF_PERF_OUTPUT(skb_events);
+
 BPF_TABLE("hash", int, struct config, conf, TOTAL_PORTS);
 // Handle packets from (namespace outside) interface and forward it to bridge 
-int handle_ingress(struct __sk_buff *skb) {
+int handle_ingress(void *skb2) {
   //Lets assume that the packet is at 0th location of the memory.
+  struct __sk_buff *skb = (struct __sk_buff *)skb2;
   u8 *cursor = 0;
   int tagPort = 1;
+  u32 magic = 0xfaceb00c; //
   struct mac_key src_key = {};
   struct host_info src_info = {};
   //Extract ethernet header from the memory and point cursor to payload of ethernet header.
@@ -68,7 +70,7 @@ int handle_ingress(struct __sk_buff *skb) {
 	struct udp_t *udp = cursor_advance(cursor, sizeof(*udp));
 	tagPort = udp->sport;
   }
- 
+ skb_events.perf_submit_skb(skb, skb->len, &magic, sizeof(magic));
   //we need sport and ifindex to locate the context from the context table
  u32 ifindex = skb->ifindex; 
  u64* inum = if_inum.lookup(&ifindex);

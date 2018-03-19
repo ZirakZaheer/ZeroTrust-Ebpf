@@ -5,6 +5,10 @@ import ctypes as ct
 from pyroute2 import IPRoute, IPDB
 from simulation import Simulation
 from netaddr import IPAddress
+import os
+from fcntl import ioctl
+from pytap2 import *
+
 ipr = IPRoute()
 ipdb = IPDB(nl=ipr)
 
@@ -51,6 +55,48 @@ def mapOperation(srcMap, dstMap):
 
 bridge_code = BPF(src_file="bridge.c")
 
+
+# do not change these values: tap interface setup
+
+TUNSETIFF = 0x400454ca
+TUNSETOWNER = TUNSETIFF + 2
+IFF_TUN = 0x0001
+IFF_TAP = 0x0002
+IFF_NO_PI = 0x1000
+tapFD = 0
+# this function returns fd to the newly created tap interface
+def tapDev(tapname, mode):
+    tap = os.open('/dev/net/tun', mode | os.O_NONBLOCK)
+    ifr = struct.pack('16sH', tapname, IFF_TAP | IFF_NO_PI)
+    ioctl(tap, TUNSETIFF, ifr)
+    return tap
+
+
+def skb_event_handler(cpu, data, size):
+    class SkbEvent(ct.Structure):
+        _fields_ =  [
+                        ("magic", ct.c_uint32),
+                        ("raw", ct.c_ubyte * (size - ct.sizeof(ct.c_uint32)))
+                    ]
+    skb_event = ct.cast(data, ct.POINTER(SkbEvent)).contents
+
+        #parse those packets to see the size and mapping of the packets
+
+        #executer actions
+                #fetch context
+                #context 
+                #insert in local context table (in ebpf maps)
+
+        #rebuild packet using scapy
+                #require a raw socket and needs to know the interface to which to write packets
+
+    icmp_type = int(skb_event.raw[54])
+    # Only print for echo request
+    print bytes(skb_event.raw)
+    os.write(openedDev, skb_event.raw)
+
+
+
 class BridgeSimulation(Simulation):
     def __init__(self, ipdb):
         super(BridgeSimulation, self).__init__(ipdb)
@@ -65,31 +111,29 @@ class BridgeSimulation(Simulation):
         mac2host   = bridge_code.get_table("mac2host")
         conf       = bridge_code.get_table("conf")
         policyMap = bridge_code.get_table("DEMO_MAP1") # {u32 , data_t}
-#	if ret != 0:
-#           raise Exception("Failed to pin map")
-        # Creating dummy interface behind which ebpf code will do bridging.
+        
+
+	# Creating dummy interface behind which ebpf code will do bridging.
         ebpf_bridge = ipdb.create(ifname="ebpf_br", kind="dummy").up().commit()
         ipr.tc("add", "ingress", ebpf_bridge.index, "ffff:")
         ipr.tc("add-filter", "bpf", ebpf_bridge.index, ":1", fd=egress_fn.fd,
            name=egress_fn.name, parent="ffff:", action="drop", classid=1)
     
-# fetch the map created in bridge.c (Policy MAP) and the map created in bpf trace function (DEMO_MAP)
-# retrieve the context from one and pass it to the other
-	#srcMap = PinnedMap("/sys/fs/bpf/test", ct.c_uint32, Data, 1024)
-	#mapOperation(srcMap, policyMap)		
-        #pinmap 
-        #libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p("/sys/fs/bpf/test2"))
 
+	# Creating tap interface behind which we run the ebpf code that forwards the packet to the ebpf bridge
+	#	tafFd = tapDev("tap0", os.O_RDWR)
+	tap0 = ipr.link_lookup(ifname="tap0")[0]
 
+	ipr.tc("add", "ingress", tap0, "ffff:")
+	ipr.tc("add-filter", "bpf", tap0, ":1", fd=ingress_fn.fd,
+		name=ingress_fn.name, parent="ffff:", action="drop", classid=1)
+	
         # Passing bridge index number to dataplane module
         conf[c_int(0)] = c_int(ebpf_bridge.index)
-#	print ipdb
-#	print ipdb.interfaces
         # Setup namespace and their interfaces for demostration.
         host_info = []
 	host_info.append(self._create_ns("vport_test2", ipaddr="174.17.0.5/16")) #vport_test5
         host_info.append(self._create_ns("vport_test3",ipaddr="174.17.0.3/16")) #vport_test4
-#	print host_info
         # For each namespace that want to connect to the ebpf bridge
         # We link it to the dummy interface behind which we run ebpf learning/forwarding code
         # logically: Attaching individual namespace interface into the ebpf bridge.
@@ -105,6 +149,9 @@ class BridgeSimulation(Simulation):
             temp_index=temp_index+1
 
 try:
+    tapFD = tapDev("tap0", os.O_RDWR)
+    print "testing"
+    bridge_code["skb_events"].open_perf_buffer(skb_event_handler)
     contextMap = bridge_code.get_table("DEMO_MAP1")
     libbcc.lib.bpf_obj_pin(contextMap.map_fd, ct.c_char_p(pathToPin))
     policyMap = bridge_code.get_table("POLICY_MAP")
@@ -114,11 +161,15 @@ try:
     text = raw_input("Maps setup done: Press a Key to continue")
     sim = BridgeSimulation(ipdb)
     sim.start()
-#    policyMap = bridge_code.get_table("DEMO_MAP1")
-   # srcMap = PinnedMap("/sys/fs/bpf/trace", ct.c_uint32, Data, 1024)
-#    libbcc.lib.bpf_obj_pin(policyMap.map_fd, ct.c_char_p(pathToPin))
-   # mapOperation(srcMap, policyMap)
-        #pinmap 
+#    os.close(tapFD)
+    icmp_req = b'E\x00\x00(\x00\x00\x00\x00@\x01`\xc2\n\x00\x00\x04\x08\x08'\
+    '\x08\x08\x08\x00\x0f\xaa\x00{\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00test'
+#os.write(ftun, icmp_req)
+
+    os.write(tapFD, icmp_req)
+    os.close(tapFD)
+    while True:
+        bridge_code.perf_buffer_poll()
     input("Press enter to quit:")
 except Exception,e:
     print str(e)
@@ -126,8 +177,10 @@ except Exception,e:
         for p in sim.processes: p.kill(); p.wait(); p.release()
 finally:
     if "ebpf_br" in ipdb.interfaces: ipdb.interfaces["ebpf_br"].remove().commit()
+    if "tap0" in ipdb.interfaces: ipdb.interfaces["tap0"].remove().commit()
     if "sim" in locals(): sim.release()
     ipdb.release()
+    os.close(tapFD)
     null.close()
 
 
