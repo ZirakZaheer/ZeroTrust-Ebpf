@@ -13,8 +13,6 @@ import time
 import threading
 import signal
 import sys
-from queue import Queue
-
 ipr = IPRoute()
 ipdb = IPDB(nl=ipr)
 
@@ -170,18 +168,18 @@ def signal_handler(signal, frame):
         null.close()
         sys.exit(0)
 
+signal.signal(signal.SIGINT, signal_handler)
+RUNNING = True
 try:
     print "testing"
     bridge_code["skb_events"].open_perf_buffer(skb_event_handler)
-    
-    def threadedPoll(q):
-		while q.empty():
-                        try:
-			   bridge_code.perf_buffer_poll()
-			except KeyboardInterrupt:
-			   print "hiwewewer"
-			time.sleep(1)
-    q = Queue()
+    """
+    def threadedPoll():
+	t = threading.currentThread()
+        while getattr(t, "do_run", True):
+                bridge_code.perf_buffer_poll()
+		time.sleep(2)
+    """
     contextMap = bridge_code.get_table("DEMO_MAP1")
     libbcc.lib.bpf_obj_pin(contextMap.map_fd, ct.c_char_p(pathToPin))
     policyMap = bridge_code.get_table("POLICY_MAP")
@@ -191,30 +189,26 @@ try:
     text = raw_input("Maps setup done: Press a Key to continue")
     sim = BridgeSimulation(ipdb)
     sim.start()
-#    t = Thread(target=threadedPoll, args=(q,))
-#    t.start()
-#    input('hit enter to exit')
+    #t.start()
+    #time.sleep(1)
 
-
-#    print q.qsize()
-#    time.sleep(5)
-#    q.put('true')
-#    t.join()
-#    input ("sdfa")
     while True:
-	    bridge_code.perf_buffer_poll()
-	    time.sleep(1)
-
-except Exception,e:
-    if "ebpf_br" in ipdb.interfaces: ipdb.interfaces["ebpf_br"].remove().commit()
+        bridge_code.perf_buffer_poll()
+   # t.do_run = False
+    #input("Press q to quit:")
+    #t.do_run = False
+    #RUNNING= False
+    #t.join()
+#except Exception,e:
 except KeyboardInterrupt,e:
     print str(e)
     if "sim" in locals():
         for p in sim.processes: p.kill(); p.wait(); p.release()
     if "ebpf_br" in ipdb.interfaces: ipdb.interfaces["ebpf_br"].remove().commit()
 finally:
-    if "ebpf_br" in ipdb.interfaces: ipdb.interfaces["ebpf_br"].remove()
-    if "tap0" in locals(): ipr.link("del", index=tap0)
+    #if "ebpf_br" in locals(): ipr.link("del",index = ipr.link_lookup(if_name="ebpf_br")[0])
+    if "ebpf_br" in ipdb.interfaces: ipdb.interfaces["ebpf_br"].remove().commit()
+    if "tap0" in locals(): ipr.link("del", index=tap0)#.remove().commit()
     if "sim" in locals(): sim.release()
     ipdb.release()
     os.close(tapFD)

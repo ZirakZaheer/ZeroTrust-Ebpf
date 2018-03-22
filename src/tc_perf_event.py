@@ -18,10 +18,10 @@ bpf_txt = """
 #include <uapi/linux/ipv6.h>
 #include <uapi/linux/pkt_cls.h>
 #include <uapi/linux/bpf.h>
-#include "/mnt/ZeroTrust-Ebpf/src/include/iproute2/bpf_elf.h"
+#include "bpf_elf.h"
 
 /*
-struct bpf_elf_map __section_maps cilium_reserved_policy = {
+struct bpf_elf_map SEC(ELF_SECTION_MAPS) cilium_reserved_policy = {
 	.type		= BPF_MAP_TYPE_PROG_ARRAY,
 	.size_key	= sizeof(__u32),
 	.size_value	= sizeof(__u32),
@@ -29,6 +29,11 @@ struct bpf_elf_map __section_maps cilium_reserved_policy = {
 	.max_elem	= 1024,
 };
 */
+
+
+
+
+
 
 BPF_PERF_OUTPUT(skb_events);
 

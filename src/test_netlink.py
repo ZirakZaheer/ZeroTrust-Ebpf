@@ -53,7 +53,7 @@ def new_dev_callback(ipdb, netlink_message, action):
 	inum = out.split(" ")[0]
 	print inum
 	ifInum[ct.c_uint(ifindex)] = ct.c_uint64(int(inum))
-	print ifInum[ct.c_uint(ifindex)]
+	print "ifindex", ifindex, ifInum[ct.c_uint(ifindex)]
 #addr_callback = ipdb.register_callback(new_address_callback)
 dev_callback = ipdb.register_callback(new_dev_callback)
 input()

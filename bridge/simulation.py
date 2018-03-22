@@ -107,6 +107,7 @@ class Simulation(object):
         return (ns_ipdb, out_ifc, in_ifc)
 
     def release(self):
+	print "release working fine"
         if self.released: return
         self.released = True
         for p in self.processes:

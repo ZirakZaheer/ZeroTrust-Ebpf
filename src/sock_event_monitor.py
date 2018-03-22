@@ -166,6 +166,7 @@ b = BPF(text=prog)
 #b.attach_kprobe(event="SyS_execve",fn_name="hello")
 #b.attach_kprobe(event="sys_socketcall",fn_name="hello")
 #b.attach_kprobe(event="unix_socketpair",fn_name="hello")
+
 TASK_COMM_LEN = 16
 class Policy(ct.Structure):
 	_fields_ = [("pid", ct.c_ulonglong),
@@ -207,11 +208,13 @@ def handle_event(cpu, data, size):
 		
 		# make the map available clusterwide
 		demoMap = b.get_table("DEMO_MAP");
-		#print demoMap.items()
 		checkItem = demoMap[ct.c_uint(event.lport)]
 		pseudoHash = event.lport + event.inum
+		tag_16 = pseudoHash & 0xFFF
+		print "tag value is %u", tag_16
+		
 		print "pseudo hash", pseudoHash
-		dstMap[ct.c_ulong(pseudoHash)] = event
+		dstMap[ct.c_uint16(tag_16)] = event
 		#print dstMap[ct.c_uint(event.lport)]
 		# check if bpf map is already pinned
 		exist_fd = libbcc.lib.bpf_obj_get(ct.c_char_p("/sys/fs/bpf/trace"))
@@ -265,7 +268,7 @@ def findNSpid(pid):
 			if line1:
 				print line
 
-dstMap = PinnedMap("/sys/fs/bpf/context", ct.c_uint32, Data, 1024)
+dstMap = PinnedMap("/sys/fs/bpf/context", ct.c_uint16, Data, 1024)
 policyMap = PinnedMap("/sys/fs/bpf/policy",ct.c_long, Policy, 1024)
 b["events"].open_perf_buffer(handle_event)
 while 1:
