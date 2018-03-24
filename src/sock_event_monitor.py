@@ -21,6 +21,10 @@ struct data_t {
  char comm[TASK_COMM_LEN];
 };
 
+struct context_t {
+ char appName[TASK_COMM_LEN];
+ /* context grows down here */
+};
 /*
 struct bpf_elf_map __section("maps") DEMO_MAP = {
 	.type		= BPF_MAP_TYPE_HASH,
@@ -174,6 +178,8 @@ class Policy(ct.Structure):
 		    ("srcContext",ct.c_char * TASK_COMM_LEN),
 		    ("dstContext",ct.c_char * TASK_COMM_LEN)]
 
+class Context(ct.Structure):
+	_fields_ = [("appName", ct.c_char * TASK_COMM_LEN)]
 
 class Data(ct.Structure):
 	_fields_ = [("pid", ct.c_ulonglong),
@@ -204,6 +210,7 @@ def handle_event(cpu, data, size):
 	event = ct.cast(data, ct.POINTER(Data)).contents
 	if event.comm != "sshd":
 		print("%-10d %-16s %-6d %-10d %s"  % (event.lport, event.comm, event.pid, event.inum, "Hello, perf_output!"))
+		#print ("%s   %-10s" % ("app launched",  event.appName))
 		findNSpid(event.pid)	
 		
 		# make the map available clusterwide
@@ -212,14 +219,17 @@ def handle_event(cpu, data, size):
 		pseudoHash = event.lport + event.inum
 		tag_16 = pseudoHash & 0xFFF
 		print "tag value is %u", tag_16
-		
+		context = Context()
+		context.appName = event.comm
 		print "pseudo hash", pseudoHash
-		dstMap[ct.c_uint16(tag_16)] = event
+		print "context name", context.appName
+		dstMap[ct.c_uint16(tag_16)] = context
 		#print dstMap[ct.c_uint(event.lport)]
 		# check if bpf map is already pinned
 		exist_fd = libbcc.lib.bpf_obj_get(ct.c_char_p("/sys/fs/bpf/trace"))
 		print(exist_fd)
-		print "event.comm", event.comm		
+		print "event.comm", event.appName
+		"""
 		if event.comm == "nginx":
 			newPolicy = Policy()
 			newPolicy.pid = event.pid
@@ -248,7 +258,7 @@ def handle_event(cpu, data, size):
                         policyMap[ct.c_long(event.lport)] = newPolicy
 
 #                        policyMap.__setitem__(ct.c_uint(event.lport),newPolicy)
-	
+		"""	
 		if exist_fd < 0:
 			ret = libbcc.lib.bpf_obj_pin(demoMap.map_fd, ct.c_char_p("/sys/fs/bpf/trace"))
 			if ret != 0:
@@ -268,8 +278,8 @@ def findNSpid(pid):
 			if line1:
 				print line
 
-dstMap = PinnedMap("/sys/fs/bpf/context", ct.c_uint16, Data, 1024)
-policyMap = PinnedMap("/sys/fs/bpf/policy",ct.c_long, Policy, 1024)
+dstMap = PinnedMap("/sys/fs/bpf/context", ct.c_uint16, Context, 1024)
+#policyMap = PinnedMap("/sys/fs/bpf/policy",ct.c_long, Policy, 1024)
 b["events"].open_perf_buffer(handle_event)
 while 1:
 	b.kprobe_poll()

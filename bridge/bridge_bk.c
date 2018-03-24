@@ -51,8 +51,7 @@ BPF_TABLE_PUBLIC("hash", u64, struct policy_t, POLICY_MAP, 1024);
 BPF_TABLE_PUBLIC("hash", u32, u64, if_inum, 1024);
 BPF_TABLE("hash", int, struct config, conf, TOTAL_PORTS);
 BPF_PERF_OUTPUT(skb_events);
-BPF_ARRAY(policyKey, int, 32);
-//BPF_TABLE("hash",int, int, policyKey, 1
+
 // Handle packets from (namespace outside) interface and forward it to bridge 
 int handle_ingress(void *skb2) {
   //Lets assume that the packet is at 0th location of the memory.
@@ -123,39 +122,31 @@ int handle_ingress(void *skb2) {
 static inline void copyStr(char dst[], char src[]) {
 	for (int i = 0; i < sizeof(src) -1;i++) {
         	dst[i] = src[i];
+  	}
 }
 */
-
-static inline int policyCheck(struct context_t* src, struct context_t* dst, int* finalKey) {
-        /* access to policy maps, looks up policy tables by combining the carried context */
-  
-  int dstVal = 0;
-  int srcVal = 0;
+static inline int policyCheck(struct context_t* src, struct context_t* dst) {
+	/* access to policy maps, looks up policy tables by combining the carried context */
+	
   /* return policy decision */
   /* to lookup first from the tag */
   /* this function will expand and functionality would need to adapt when PTM are introduced*/
-/*  if (src) {
-        for (int i = 0; i < sizeof(src->appName)-1; i++) {
-                        srcVal += (int) src->appName[i];
-        }
+/*  if ((!src) || (!dst)) return -1; */
+  int srcVal = 0;
+	for (int i = 0; i < sizeof(src->appName)-1; i++) {
+			srcVal += (int) src->appName[i];
+	}
+  int dstVal = 0;
+	for (int i = 0; i < sizeof(dst->appName)-1; i++) {
+      dstVal += (int) dst->appName[i];
   }
-  if (dst) {  
-      for (int i = 0; i < sizeof(dst->appName)-1; i++) {
-	      dstVal += (int) dst->appName[i];
-      }	
-  }
-  int key  = 0;
-  int newKey = 123;
-  policyKey.update(&key, &newKey);
-  key = srcVal + dstVal;
-  if (key > 0) {
-	return key;
-  } else {
-	return 0;
-  }
-*/
-return 0;
+  int finalTag = srcVal + dstVal;
+  
+  
+  return finalTag;
 }
+
+
 // Handle packets inside the bridge and forward it to respective interface
 int handle_egress(struct __sk_buff *skb) {
   u8 *cursor = 0;
@@ -188,64 +179,92 @@ int handle_egress(struct __sk_buff *skb) {
   u32 pseudoHash = 0;
   u16 receiver_tag_16 = 123;
   u16 packetTag = skb->vlan_tci;
-
-
   if (inum) {
         pseudoHash = *inum + dstPort;
-        receiver_tag_16 = pseudoHash & 0xFFF;
+        receiver_tag_16 = pseudoHash & TAG_MASK;
   } else {
         // throw error
         bpf_trace_printk("inum not found\n");
   }
 
-  struct context_t* recv_context = DEMO_MAP1.lookup(&receiver_tag_16);
-  struct context_t recv = {};
-  int srcVal = 0; 
-  int recvVal = 0;
-  if (recv_context) {
-     bpf_trace_printk("receiver context found\n");
-     recv.appName[0] = recv_context->appName[0];
-     for (int i = 0; i < sizeof(recv_context->appName) -1;i++) {
-                        recv.appName[i] = recv_context->appName[i];
-     } 
-     for (int i = 0; i < sizeof(recv_context->appName)-1; i++) {
-                        recvVal += (int) recv_context->appName[i];
-     } 
+  /*  todo: fetch receiveing container context */
+//  struct context_t recv = {};
+  //struct context_t* recv_context = 0;
+//  if (receiver_tag_16) {
+//       struct context_t* recv_context = DEMO_MAP1.lookup(&packetTag);
+/*        if (recv_context) {
+	//bpf_probe_read(&recv.appName[0], sizeof(char),&recv_context->appName[0]);
+  		for (int i = 0; i < sizeof(recv_context->appName) -1;i++) {
+        		recv.appName[i] = recv_context->appName[i];
+  		}	
+  	}
+*/	
+//  } else {
+//       bpf_trace_printk("receiver tag missing, how come?\n");
+//  }
+/*  if (recv_context) {
+       bpf_trace_printk("receiver context found\n");
+  } else {
+	//guaranteed to be found
   }
+*/
+  /* tag for sending container */
 
-  struct context_t* send_context = DEMO_MAP1.lookup(&packetTag);
-  struct context_t src = {};
-  if (send_context) {
-     bpf_trace_printk("sender context found\n");
-     src.appName[0] = send_context->appName[0];
-     for (int i = 0; i < sizeof(send_context->appName) -1;i++) {
-                  src.appName[i] = send_context->appName[i];
-     }           
-    for (int i = 0; i < sizeof(send_context->appName)-1; i++) {
-                        srcVal += (int) send_context->appName[i];
-        }
+  /*todo: fetch sending container context*/
+//  struct context_t* recv_context = DEMO_MAP1.lookup(&packetTag);
+//  struct context_t* sender_context = DEMO_MAP1.lookup(&packetTag);
+
+//  if (sender_context) { 
+//       bpf_trace_printk("sender context found\n");
+//  }
+
+/* else {
+ //   todo slow path
+ //    add logic to handle abnormal packets 
+   //skb_events.perf_submit_skb(skb, skb->len, &packetTag, sizeof(packetTag));
   }
-
-  int finalKey = srcVal + recvVal;
-  //int finalKey2 = 1;
+*/
   /*todo: key formation for policy table lookup: will need to include set/subset of recv&send context */
   // static inline function that forms a key by combining recv and sender context, also takes in Policy Templates for key formation currently I can ignore this sincle context is simple
   /* key should be same as the policy key in userspace*/
+//  struct context_t src = {};
+  u32 num = 0;
+  u32 othernum = 45;
+  char testapp[10] = "heylo";
+  //src.appName[0] = sender_context->appName[0];
+//  copyStr(src.appName, sender_context->appName); 
+//  copyStr(recv.appName, recv_context->appName);
+//  if (sender_context) { 
+//	bpf_probe_read_str(&src.appName, sizeof(sender_context->appName), &sender_context->appName);
+        //src.appName = sender_context->appName;
+         
+//  for (int i = 0; i < sizeof(sender_context->appName) -1;i++) {
+//	src.appName[i] = sender_context->appName[i];
+//  }
+
+  /*
+  if (src)
+  	bpf_trace_printk("sender context %s \n", src.appName);
+  if (recv)
+  	bpf_trace_printk("receiver context %s \n", recv.appName);
+  */
+
+
+
+
+//  	int keyFormed = policyCheck(&src, &recv);
+//  	bpf_trace_printk("keyformation check %d \n", keyFormed);
+//  }
   /*remove vlan header from skb */
- 
-  //int ret = policyCheck(&src, &recv, &finalKey);
-  //if (keyFormed)
-  //int finalKey2 = ret;
   bpf_skb_vlan_pop(skb);
-  //bpf_probe_read(&finalKey2, sizeof(finalKey2), finalKey);
-  int key1 = 123 + 3434;
-  bpf_trace_printk("keyformation check %d \n", key1);
+
   /*handle policy here*/
   struct policy_t* dstPolicy = POLICY_MAP.lookup(&dstPort); 
 
   int policyFound  = 0;
   if (dstPolicy) { 
-
+		policyFound = 1;
+//		bpf_trace_printk("Policy for process is  ---  %d -- \n", dstPolicy->pid); 
   } else {
 //                bpf_trace_printk("policy for process on port %u not found\n",dstPort);
   }
